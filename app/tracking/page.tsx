@@ -1,18 +1,21 @@
 "use client";
-import { useState } from "react";
-import { Search, Package, Truck, CheckCircle2, Clock, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Package, Truck, CheckCircle2, Clock, ChevronRight, XCircle } from "lucide-react";
 import Link from "next/link";
+import { getMyOrderDetail, getMyOrders } from "@/lib/api/orders";
+import type { OrderDetail, OrderListItem } from "@/lib/types/order";
+import { useRouter, useSearchParams } from "next/navigation";
 
-type OrderStatus = "pending" | "confirmed" | "shipping" | "delivered";
+type OrderStatus = "pending" | "confirmed" | "shipping" | "delivered" | "cancelled";
 
-interface FakeOrder {
-  id: string;
+interface TrackingOrder {
+  id: number;
   status: OrderStatus;
   createdAt: string;
-  customerName: string;
   totalPrice: number;
-  items: { name: string; qty: number; price: number }[];
-  estimatedDelivery: string;
+  items: { name: string; qty: number; lineTotal: number }[];
+  shippingAddress?: string | null;
+  customerPhone?: string | null;
 }
 
 const STATUS_STEPS: { key: OrderStatus; label: string; icon: typeof Package }[] = [
@@ -20,56 +23,152 @@ const STATUS_STEPS: { key: OrderStatus; label: string; icon: typeof Package }[] 
   { key: "confirmed", label: "Đã xác nhận", icon: CheckCircle2 },
   { key: "shipping", label: "Đang giao hàng", icon: Truck },
   { key: "delivered", label: "Đã nhận hàng", icon: Package },
+  { key: "cancelled", label: "Đã hủy", icon: XCircle },
 ];
 
-const STATUS_ORDER: OrderStatus[] = ["pending", "confirmed", "shipping", "delivered"];
+const STATUS_ORDER: OrderStatus[] = ["pending", "confirmed", "shipping", "delivered", "cancelled"];
 
-// Mock orders for demo
-const MOCK_ORDERS: Record<string, FakeOrder> = {
-  "BMG-001234": {
-    id: "BMG-001234",
-    status: "shipping",
-    createdAt: "10/03/2026",
-    customerName: "Nguyễn Văn A",
-    totalPrice: 1850000,
-    items: [{ name: "Đĩa game PS5 Ghost of Yotei", qty: 1, price: 1850000 }],
-    estimatedDelivery: "11/03/2026",
-  },
-  "BMG-005678": {
-    id: "BMG-005678",
-    status: "delivered",
-    createdAt: "05/03/2026",
-    customerName: "Trần Thị B",
-    totalPrice: 750000,
-    items: [{ name: "Pokémon TCG: Mega Evolution Booster Box", qty: 1, price: 750000 }],
-    estimatedDelivery: "07/03/2026",
-  },
-};
+function mapStatus(status: string): OrderStatus {
+  switch (status.toUpperCase()) {
+    case "PENDING":
+      return "pending";
+    case "CONFIRMED":
+      return "confirmed";
+    case "SHIPPED":
+      return "shipping";
+    case "DONE":
+      return "delivered";
+    case "CANCELLED":
+      return "cancelled";
+    default:
+      return "pending";
+  }
+}
+
+function toTrackingOrder(detail: OrderDetail): TrackingOrder {
+  return {
+    id: detail.id,
+    status: mapStatus(detail.orderStatus),
+    createdAt: detail.orderDate,
+    totalPrice: detail.finalAmount,
+    shippingAddress: detail.shippingAddress,
+    customerPhone: detail.customerPhone,
+    items: detail.items.map((item) => ({
+      name: item.productName,
+      qty: item.quantity,
+      lineTotal: item.lineTotal,
+    })),
+  };
+}
 
 function formatPrice(p: number) {
   return p.toLocaleString("vi-VN") + "đ";
 }
 
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("vi-VN");
+}
+
+function parseOrderId(raw: string): number | null {
+  const digits = raw.replace(/\D+/g, "");
+  if (!digits) return null;
+  const parsed = Number(digits);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+function isUnauthorizedError(err: unknown) {
+  if (!(err instanceof Error)) return false;
+  const message = err.message.toLowerCase();
+  return (
+    message.includes("401") ||
+    message.includes("unauthorized") ||
+    message.includes("session expired")
+  );
+}
+
 export default function TrackingPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState("");
-  const [result, setResult] = useState<FakeOrder | null | "not-found">(null);
+  const [result, setResult] = useState<TrackingOrder | null | "not-found">(null);
+  const [myOrders, setMyOrders] = useState<OrderListItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const queryOrderId = searchParams.get("orderId");
+
+  async function loadOrderDetailById(id: number) {
+    setLoading(true);
+    try {
+      const detail = await getMyOrderDetail(id);
+      setResult(toTrackingOrder(detail));
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        router.push(`/auth/login?next=${encodeURIComponent("/tracking")}`);
+        return;
+      }
+      setResult("not-found");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const orders = await getMyOrders();
+        if (!mounted) return;
+        setMyOrders(orders);
+      } catch (err) {
+        if (!mounted) return;
+        if (isUnauthorizedError(err)) {
+          router.push(`/auth/login?next=${encodeURIComponent("/tracking")}`);
+          return;
+        }
+        setError(err instanceof Error ? err.message : "Không tải được đơn hàng");
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (!queryOrderId) return;
+    const parsedId = parseOrderId(queryOrderId);
+    if (!parsedId) return;
+
+    setOrderId(String(parsedId));
+    loadOrderDetailById(parsedId);
+  }, [queryOrderId]);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = orderId.trim().toUpperCase();
+    const trimmed = orderId.trim();
     if (!trimmed) return;
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    const order = MOCK_ORDERS[trimmed] ?? "not-found";
-    setResult(order);
-    setLoading(false);
+
+    const parsedId = parseOrderId(trimmed);
+    if (!parsedId) {
+      setResult("not-found");
+      return;
+    }
+
+    await loadOrderDetailById(parsedId);
   }
 
-  const activeStepIndex =
+  const activeStepIndex = useMemo(
+    () =>
     result && result !== "not-found"
-      ? STATUS_ORDER.indexOf(result.status)
-      : -1;
+        ? STATUS_ORDER.indexOf(result.status)
+        : -1,
+    [result]
+  );
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
@@ -88,8 +187,7 @@ export default function TrackingPage() {
           </div>
           <h1 className="text-2xl font-extrabold text-gray-900">Tra cứu đơn hàng</h1>
           <p className="text-sm text-gray-500">
-            Nhập mã đơn hàng để theo dõi tình trạng giao hàng của bạn.<br />
-            <span className="text-xs text-gray-400">(Demo: thử BMG-001234 hoặc BMG-005678)</span>
+            Nhập mã đơn (ID số) để theo dõi tình trạng giao hàng của bạn.
           </p>
         </div>
 
@@ -98,7 +196,7 @@ export default function TrackingPage() {
           <input
             value={orderId}
             onChange={(e) => setOrderId(e.target.value)}
-            placeholder="Mã đơn hàng, ví dụ: BMG-001234"
+            placeholder="Mã đơn hàng, ví dụ: 1025"
             className="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-[var(--brand-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-navy)]/20"
           />
           <button
@@ -115,10 +213,37 @@ export default function TrackingPage() {
           </button>
         </form>
 
+        {error ? (
+          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+            {error}. Vui lòng đăng nhập để tra cứu đơn hàng của bạn.
+          </div>
+        ) : null}
+
+        {!error && myOrders.length > 0 ? (
+          <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase text-gray-500">Đơn hàng gần đây</p>
+            <div className="flex flex-wrap gap-2">
+              {myOrders.slice(0, 6).map((order) => (
+                <button
+                  key={order.id}
+                  type="button"
+                  onClick={() => {
+                    setOrderId(String(order.id));
+                    loadOrderDetailById(order.id);
+                  }}
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                >
+                  #{order.id}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* Results */}
         {result === "not-found" && (
           <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600">
-            Không tìm thấy đơn hàng với mã <strong>{orderId.trim().toUpperCase()}</strong>. Vui lòng kiểm tra lại!
+            Không tìm thấy đơn hàng với mã <strong>{orderId.trim()}</strong>. Vui lòng kiểm tra lại!
           </div>
         )}
 
@@ -129,15 +254,11 @@ export default function TrackingPage() {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <p className="text-xs text-gray-500">Mã đơn hàng</p>
-                  <p className="font-extrabold text-[var(--brand-navy)]">{result.id}</p>
+                  <p className="font-extrabold text-[var(--brand-navy)]">#{result.id}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Ngày đặt</p>
-                  <p className="font-semibold text-gray-800">{result.createdAt}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Dự kiến giao</p>
-                  <p className="font-semibold text-gray-800">{result.estimatedDelivery}</p>
+                  <p className="font-semibold text-gray-800">{formatDate(result.createdAt)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Tổng tiền</p>
@@ -145,12 +266,24 @@ export default function TrackingPage() {
                 </div>
               </div>
 
+              {result.shippingAddress ? (
+                <div className="mt-3 border-t border-gray-200 pt-3 text-sm text-gray-700">
+                  <span className="font-semibold">Địa chỉ nhận:</span> {result.shippingAddress}
+                </div>
+              ) : null}
+
+              {result.customerPhone ? (
+                <div className="mt-2 text-sm text-gray-700">
+                  <span className="font-semibold">SĐT nhận:</span> {result.customerPhone}
+                </div>
+              ) : null}
+
               {/* Items */}
               <div className="mt-3 border-t border-gray-200 pt-3">
                 {result.items.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm text-gray-700">
                     <span>{item.name} × {item.qty}</span>
-                    <span className="font-medium">{formatPrice(item.price)}</span>
+                    <span className="font-medium">{formatPrice(item.lineTotal)}</span>
                   </div>
                 ))}
               </div>

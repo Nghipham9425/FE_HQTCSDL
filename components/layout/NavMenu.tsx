@@ -6,30 +6,24 @@ import { ChevronDown } from "lucide-react";
 const navItems = [
   { label: "TRANG CHỦ", href: "/" },
   {
-    label: "PLAYSTATION 5",
-    href: "/products?category=ps5",
+    label: "CONSOLE",
+    href: "/products?category=console",
     children: [
-      { label: "Đĩa game PS5", href: "/products?category=ps5" },
-      { label: "Máy PS5", href: "/products?category=ps5&sub=console" },
-      { label: "Tay cầm DualSense", href: "/products?category=ps5&sub=controller" },
-      { label: "Phụ kiện PS5", href: "/products?category=ps5&sub=accessory" },
+      { label: "Tất cả Console", href: "/products?category=console" },
     ],
   },
   {
-    label: "NINTENDO SWITCH",
-    href: "/products?category=switch",
+    label: "ACCESSORY",
+    href: "/products?category=accessory",
     children: [
-      { label: "Băng game Switch", href: "/products?category=switch" },
-      { label: "Máy Nintendo Switch 2", href: "/products?category=switch&sub=console" },
-      { label: "Phụ kiện Switch", href: "/products?category=switch&sub=accessory" },
+      { label: "Tất cả Accessory", href: "/products?category=accessory" },
     ],
   },
   {
-    label: "TRADING CARD GAME",
+    label: "POKEMON TCG",
     href: "/products?category=pokemon-tcg",
     children: [
       { label: "Pokemon TCG", href: "/products?category=pokemon-tcg" },
-      { label: "One Piece TCG", href: "/products?category=one-piece-tcg" },
     ],
   },
   { label: "TIN TỨC", href: "/news" },

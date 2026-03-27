@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, CheckCircle } from "lucide-react";
 import { useState } from "react";
-import { type Product } from "@/data/mock/products";
+import { type Product } from "@/lib/api/products";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/lib/stores/cartStore";
 
@@ -19,6 +19,11 @@ function formatPrice(price: number) {
 export default function ProductCard({ product, className }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
+  const [imgSrc, setImgSrc] = useState(
+    product.thumbnail || "https://picsum.photos/seed/cardgame-placeholder/400/500"
+  );
+  const inStock = product.stock > 0;
+  const price = product.price ?? 0;
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -29,21 +34,14 @@ export default function ProductCard({ product, className }: ProductCardProps) {
 
   return (
     <Link
-      href={`/products/${product.slug}`}
+      href={`/products/${product.id}`}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
         className
       )}
     >
-      {/* Discount badge */}
-      {product.discountPercent > 0 && (
-        <span className="absolute left-2 top-2 z-10 rounded bg-[var(--brand-red)] px-1.5 py-0.5 text-[11px] font-bold text-white">
-          -{product.discountPercent}%
-        </span>
-      )}
-
       {/* Out of stock overlay */}
-      {!product.inStock && (
+      {!inStock && (
         <div className="absolute inset-0 z-10 flex items-start justify-center pt-14">
           <span className="rounded bg-black/60 px-2 py-0.5 text-xs font-semibold text-white">
             Hết hàng
@@ -52,42 +50,42 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       )}
 
       {/* Image */}
-      <div className="relative h-52 w-full overflow-hidden bg-gray-100">
+      <div className="relative h-64 w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
+        <div className="absolute left-2 top-2 z-10 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-slate-700 shadow-sm backdrop-blur">
+          {product.sku}
+        </div>
         <Image
-          src={product.images[0]}
+          src={imgSrc}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 50vw, 25vw"
+          onError={() => setImgSrc("https://picsum.photos/seed/cardgame-fallback/400/500")}
           className={cn(
-            "object-cover transition-transform duration-300 group-hover:scale-105",
-            !product.inStock && "opacity-60"
+            "object-contain p-2 transition-transform duration-300 group-hover:scale-105",
+            !inStock && "opacity-60"
           )}
         />
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-          {product.brand}
-        </p>
-        <p className="line-clamp-2 text-sm font-medium leading-snug text-gray-800">
+      <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">{product.productType}</p>
+        <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-slate-800">
           {product.name}
         </p>
 
         {/* Prices */}
-        <div className="mt-auto flex items-center gap-2 pt-2">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
           <span className="text-base font-bold text-[var(--brand-red)]">
-            {formatPrice(product.price)}
+            {formatPrice(price)}
           </span>
-          {product.originalPrice > product.price && (
-            <span className="text-xs text-gray-400 line-through">
-              {formatPrice(product.originalPrice)}
-            </span>
-          )}
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+            Kho: {product.stock}
+          </span>
         </div>
 
         {/* CTA */}
-        {product.inStock ? (
+        {inStock ? (
           <button
             onClick={handleAddToCart}
             className={cn(

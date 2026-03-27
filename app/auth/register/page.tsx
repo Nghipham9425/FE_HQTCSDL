@@ -3,17 +3,39 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { getPostLoginPath, register } from "@/lib/api/auth";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    // TODO: call register API when backend is ready
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
+    const formData = new FormData(e.currentTarget);
+
+    const fullName = String(formData.get("fullname") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+    const confirmPassword = String(formData.get("confirmPassword") || "");
+
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const result = await register({ fullName, email, password });
+      window.location.href = getPostLoginPath(result.user.role);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đăng ký thất bại");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -166,6 +188,7 @@ export default function RegisterPage() {
               )}
               Đăng ký tài khoản
             </button>
+            {error && <p className="text-sm text-rose-600">{error}</p>}
           </form>
 
           {/* Login link */}

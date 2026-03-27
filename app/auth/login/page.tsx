@@ -3,17 +3,30 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { Eye, EyeOff, LogIn } from "lucide-react";
+import { getPostLoginPath, login } from "@/lib/api/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    // TODO: call auth API when backend is ready
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+
+    setError(null);
+
+    try {
+      const result = await login({ email, password });
+      window.location.href = getPostLoginPath(result.user.role);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -114,6 +127,7 @@ export default function LoginPage() {
               )}
               Đăng nhập
             </button>
+            {error && <p className="text-sm text-rose-600">{error}</p>}
           </form>
 
           {/* Divider */}

@@ -4,15 +4,15 @@ import Image from "next/image";
 import { useState } from "react";
 import ProductCard from "@/components/ui/ProductCard";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { type Product } from "@/data/mock/products";
+import { type Product } from "@/lib/api/products";
+import { type ProductCategory } from "@/lib/types/product-api";
 
-type TabKey = "ps5" | "switch" | "pokemon-tcg" | "one-piece-tcg";
+type TabKey = Extract<ProductCategory, "console" | "accessory" | "pokemon-tcg">;
 
 const tabs: { key: TabKey; label: string }[] = [
-  { key: "ps5", label: "Playstation 5" },
-  { key: "switch", label: "Nintendo Switch" },
-  { key: "pokemon-tcg", label: "Trading Card Game" },
-  { key: "one-piece-tcg", label: "One Piece TCG" },
+  { key: "console", label: "Console" },
+  { key: "accessory", label: "Accessory" },
+  { key: "pokemon-tcg", label: "Pokemon TCG" },
 ];
 
 interface NewArrivalsProps {
@@ -20,7 +20,7 @@ interface NewArrivalsProps {
 }
 
 export default function NewArrivals({ productsByCategory }: NewArrivalsProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>("ps5");
+  const [activeTab, setActiveTab] = useState<TabKey>("console");
   const products = productsByCategory[activeTab] ?? [];
 
   return (

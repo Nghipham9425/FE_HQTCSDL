@@ -4,7 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
 import ProductCard from "@/components/ui/ProductCard";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { type Product } from "@/data/mock/products";
+import { type Product } from "@/lib/api/products";
 
 interface SaleCarouselProps {
   products: Product[];

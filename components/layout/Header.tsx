@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -16,11 +16,48 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import { useCartStore } from "@/lib/stores/cartStore"
+import { getStoredRole, logout } from "@/lib/api/auth"
+
+type AccountMenuItem = {
+  label: string
+  href: string
+}
+
+const accountMenuItems: AccountMenuItem[] = [
+  { label: "Hồ sơ tài khoản", href: "/account/profile" },
+  { label: "Đơn hàng của tôi", href: "/account/orders" },
+  { label: "Sổ địa chỉ", href: "/account/addresses" },
+  { label: "Wishlist", href: "/account/wishlist" },
+  { label: "Voucher của tôi", href: "/account/vouchers" },
+  { label: "Đổi mật khẩu", href: "/account/change-password" },
+]
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userName, setUserName] = useState("Tài khoản")
+  const [userRole, setUserRole] = useState<string | null>(null)
   const totalItems = useCartStore((s) => s.totalItems)
+
+  useEffect(() => {
+    const loggedIn = localStorage.getItem("auth_logged_in") === "true"
+    const name = localStorage.getItem("auth_user_name")
+    const role = getStoredRole()
+    setIsLoggedIn(loggedIn)
+    setUserRole(role)
+    if (name) setUserName(name)
+  }, [])
+
+  const isAdmin = userRole?.toUpperCase() === "ADMIN"
+
+  async function handleLogout() {
+    await logout()
+    setIsLoggedIn(false)
+    setUserRole(null)
+    setAccountMenuOpen(false)
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -88,16 +125,57 @@ export default function Header() {
         </a>
 
         {/* Auth */}
-        <Link
-          href="/auth/login"
-          className="hidden items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-xs hover:border-[var(--brand-navy)] hover:bg-gray-50 transition-colors lg:flex"
-        >
-          <CircleUser size={18} className="text-gray-500" />
-          <div className="leading-tight">
-            <div className="text-gray-400">Tài khoản</div>
-            <div className="font-semibold text-gray-700">Đăng nhập</div>
+        {isLoggedIn ? (
+          <div className="relative hidden lg:block">
+            <button
+              onClick={() => setAccountMenuOpen((v) => !v)}
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-xs hover:border-[var(--brand-navy)] hover:bg-gray-50 transition-colors"
+            >
+              <CircleUser size={18} className="text-gray-500" />
+              <div className="leading-tight text-left">
+                <div className="text-gray-400">Xin chào</div>
+                <div className="font-semibold text-gray-700">{userName}</div>
+              </div>
+            </button>
+
+            {accountMenuOpen && (
+              <div className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                {isAdmin && (
+                  <Link href="/admin" className="block rounded-lg px-3 py-2 text-sm hover:bg-gray-50">
+                    Vào trang admin
+                  </Link>
+                )}
+                {accountMenuItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block rounded-lg px-3 py-2 text-sm hover:bg-gray-50"
+                    onClick={() => setAccountMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            )}
           </div>
-        </Link>
+        ) : (
+          <Link
+            href="/auth/login"
+            className="hidden items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-xs hover:border-[var(--brand-navy)] hover:bg-gray-50 transition-colors lg:flex"
+          >
+            <CircleUser size={18} className="text-gray-500" />
+            <div className="leading-tight">
+              <div className="text-gray-400">Tài khoản</div>
+              <div className="font-semibold text-gray-700">Đăng nhập</div>
+            </div>
+          </Link>
+        )}
 
         {/* Cart */}
         <Link
@@ -157,13 +235,13 @@ export default function Header() {
               },
             ] as { Icon: React.ElementType; label: string; color: string }[]
           ).map(({ Icon, label, color }, i, arr) => (
-            <>
-              <span key={label} className="flex items-center gap-1.5">
+            <div key={label} className="contents">
+              <span className="flex items-center gap-1.5">
                 <Icon size={13} className={color} strokeWidth={2.5} />
                 {label}
               </span>
               {i < arr.length - 1 && <span className="h-3 w-px bg-gray-300" />}
-            </>
+            </div>
           ))}
         </div>
       </div>
@@ -173,14 +251,9 @@ export default function Header() {
         <div className="border-t border-gray-100 bg-white px-4 py-4 shadow-lg lg:hidden">
           <nav className="flex flex-col gap-1 text-sm">
             {[
-              { label: "PlayStation 4", href: "/products?category=ps4" },
-              { label: "PlayStation 5", href: "/products?category=ps5" },
-              { label: "Nintendo Switch", href: "/products?category=switch" },
+              { label: "Console", href: "/products?category=console" },
+              { label: "Accessory", href: "/products?category=accessory" },
               { label: "Pokemon TCG", href: "/products?category=pokemon-tcg" },
-              {
-                label: "One Piece TCG",
-                href: "/products?category=one-piece-tcg",
-              },
               { label: "Tin Tức", href: "/news" },
               { label: "Liên Hệ", href: "/contact" },
             ].map((item) => (
@@ -193,22 +266,58 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
-            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-gray-100 pt-3">
-              <Link
-                href="/auth/login"
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-semibold text-gray-700"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <CircleUser size={15} /> Đăng nhập
-              </Link>
-              <Link
-                href="/auth/register"
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-[var(--brand-red)] px-3 py-2.5 text-sm font-semibold text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Đăng ký
-              </Link>
-            </div>
+            {isLoggedIn ? (
+              <div className="mt-2 border-t border-gray-100 pt-3">
+                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Tài khoản</p>
+                <div className="flex flex-col gap-1">
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center rounded-xl px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Vào trang admin
+                    </Link>
+                  )}
+                  {accountMenuItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center rounded-xl px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <button
+                    onClick={async () => {
+                      await handleLogout()
+                      setMobileMenuOpen(false)
+                    }}
+                    className="flex items-center rounded-xl px-3 py-2.5 text-left font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-gray-100 pt-3">
+                <Link
+                  href="/auth/login"
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-semibold text-gray-700"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <CircleUser size={15} /> Đăng nhập
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-[var(--brand-red)] px-3 py-2.5 text-sm font-semibold text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}

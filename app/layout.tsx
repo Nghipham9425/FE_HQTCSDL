@@ -1,10 +1,7 @@
 import type { Metadata } from "next"
 import { Be_Vietnam_Pro } from "next/font/google"
 import "./globals.css"
-import AnnouncementBar from "@/components/layout/AnnouncementBar"
-import Header from "@/components/layout/Header"
-import NavMenu from "@/components/layout/NavMenu"
-import Footer from "@/components/layout/Footer"
+import RootFrame from "@/components/layout/RootFrame"
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -29,11 +26,7 @@ export default function RootLayout({
       <body
         className={`${beVietnamPro.variable} antialiased bg-[var(--brand-gray-bg)]`}
       >
-        <AnnouncementBar />
-        <Header />
-        <NavMenu />
-        <main>{children}</main>
-        <Footer />
+        <RootFrame>{children}</RootFrame>
       </body>
     </html>
   )

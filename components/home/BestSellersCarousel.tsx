@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import ProductCard from "@/components/ui/ProductCard";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { type Product } from "@/data/mock/products";
+import { type Product } from "@/lib/api/products";
 
 interface BestSellersCarouselProps {
   products: Product[];
