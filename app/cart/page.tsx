@@ -55,14 +55,14 @@ export default function CartPage() {
 
             {items.map((item) => (
               <div
-                key={item.product.id}
+                key={String(item.product.id)}
                 className="grid grid-cols-12 gap-4 border-b border-gray-100 px-4 py-4 last:border-b-0 items-center"
               >
                 {/* Product */}
                 <div className="col-span-12 flex items-center gap-3 md:col-span-6">
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                     <Image
-                      src={item.product.images[0]}
+                      src={item.product.thumbnail || "https://picsum.photos/seed/cardgame-placeholder/400/500"}
                       alt={item.product.name}
                       fill
                       sizes="80px"
@@ -71,22 +71,22 @@ export default function CartPage() {
                   </div>
                   <div className="flex flex-1 flex-col gap-1">
                     <Link
-                      href={`/products/${item.product.slug}`}
+                      href={`/products/${item.product.id}`}
                       className="text-sm font-semibold text-gray-800 hover:text-[var(--brand-red)] line-clamp-2"
                     >
                       {item.product.name}
                     </Link>
-                    <span className="text-xs text-gray-400">{item.product.brand}</span>
+                    <span className="text-xs text-gray-400">{item.product.productType}</span>
                     {/* Mobile price */}
                     <span className="font-bold text-[var(--brand-red)] md:hidden">
-                      {formatPrice(item.product.price)}
+                      {formatPrice(item.product.price ?? 0)}
                     </span>
                   </div>
                 </div>
 
                 {/* Unit price */}
                 <div className="col-span-2 hidden text-center text-sm text-gray-700 md:block">
-                  {formatPrice(item.product.price)}
+                  {formatPrice(item.product.price ?? 0)}
                 </div>
 
                 {/* Quantity */}
@@ -108,13 +108,13 @@ export default function CartPage() {
 
                 {/* Subtotal */}
                 <div className="col-span-5 hidden text-center text-sm font-bold text-[var(--brand-red)] md:col-span-2 md:block">
-                  {formatPrice(item.product.price * item.quantity)}
+                  {formatPrice((item.product.price ?? 0) * item.quantity)}
                 </div>
 
                 {/* Subtotal mobile */}
                 <div className="col-span-2 flex items-center justify-end md:hidden">
                   <span className="text-sm font-bold text-[var(--brand-red)]">
-                    {formatPrice(item.product.price * item.quantity)}
+                    {formatPrice((item.product.price ?? 0) * item.quantity)}
                   </span>
                 </div>
 

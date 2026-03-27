@@ -13,14 +13,13 @@ import {
 import { blogPosts } from "@/data/mock/blogs";
 
 export default async function HomePage() {
-  const [bestSellers, onSale, ps5New, switchNew, tcgNew, opNew] =
+  const [bestSellers, onSale, consoleNew, accessoryNew, tcgNew] =
     await Promise.all([
       fetchBestSellers(8),
       fetchOnSale(8),
-      fetchNewArrivals("ps5", 10),
-      fetchNewArrivals("switch", 10),
+      fetchNewArrivals("console", 10),
+      fetchNewArrivals("accessory", 10),
       fetchNewArrivals("pokemon-tcg", 10),
-      fetchNewArrivals("one-piece-tcg", 10),
     ]);
 
   return (
@@ -31,10 +30,9 @@ export default async function HomePage() {
       <SearchTrends />
       <NewArrivals
         productsByCategory={{
-          ps5: ps5New,
-          switch: switchNew,
+          console: consoleNew,
+          accessory: accessoryNew,
           "pokemon-tcg": tcgNew,
-          "one-piece-tcg": opNew,
         }}
       />
       <div className="mx-auto max-w-screen-xl px-4">
