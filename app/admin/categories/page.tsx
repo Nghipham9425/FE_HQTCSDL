@@ -1,15 +1,15 @@
-import EntityTable from "@/components/admin/EntityTable";
-import Link from "next/link";
-import { listCategories } from "@/lib/api/admin";
+import EntityTable from "@/components/admin/EntityTable"
+import Link from "next/link"
+import { listCategories } from "@/lib/api/admin"
 
 export default async function AdminCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string }>
 }) {
-  const params = await searchParams;
-  const page = Math.max(Number(params.page) || 1, 1);
-  const data = await listCategories(page, 20);
+  const params = await searchParams
+  const page = Math.max(Number(params.page) || 1, 1)
+  const data = await listCategories(page, 20)
 
   return (
     <EntityTable
@@ -30,13 +30,21 @@ export default async function AdminCategoriesPage({
       }
       columns={[
         { header: "ID", render: (row) => row.id ?? "-" },
-        { header: "Category Name", render: (row) => <span className="font-semibold">{row.name}</span> },
+        {
+          header: "Category Name",
+          render: (row) => <span className="font-semibold">{row.name}</span>,
+        },
         { header: "Product Count", render: (row) => row.productCount },
         {
           header: "Thumbnail",
           render: (row) =>
             row.thumbnail ? (
-              <a href={row.thumbnail} target="_blank" className="text-indigo-600 underline" rel="noreferrer">
+              <a
+                href={row.thumbnail}
+                target="_blank"
+                className="text-indigo-600 underline"
+                rel="noreferrer"
+              >
                 View
               </a>
             ) : (
@@ -47,7 +55,10 @@ export default async function AdminCategoriesPage({
           header: "Action",
           render: (row) =>
             row.id ? (
-              <Link href={`/admin/categories/edit/${row.id}`} className="text-indigo-600 underline">
+              <Link
+                href={`/admin/categories/edit/${row.id}`}
+                className="text-indigo-600 underline"
+              >
                 Edit
               </Link>
             ) : (
@@ -56,5 +67,5 @@ export default async function AdminCategoriesPage({
         },
       ]}
     />
-  );
+  )
 }

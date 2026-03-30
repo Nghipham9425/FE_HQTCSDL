@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 import {
   Bell,
   Boxes,
@@ -18,18 +18,18 @@ import {
   Tag,
   X,
   LogOut,
-} from "lucide-react";
-import { getStoredRole, logout } from "@/lib/api/auth";
+} from "lucide-react"
+import { getStoredRole, logout } from "@/lib/api/auth"
 
 type AdminShellProps = {
-  children: React.ReactNode;
-};
+  children: React.ReactNode
+}
 
 type NavItem = {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-};
+  href: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+}
 
 const navItems: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -39,55 +39,61 @@ const navItems: NavItem[] = [
   { href: "/admin/tcg-cards", label: "TCG Cards", icon: Tag },
   { href: "/admin/tcg-sets", label: "TCG Sets", icon: Tag },
   { href: "/admin/vouchers", label: "Vouchers", icon: Gift },
-  { href: "/admin/payment-methods", label: "Payment Methods", icon: CreditCard },
-];
+  {
+    href: "/admin/payment-methods",
+    label: "Payment Methods",
+    icon: CreditCard,
+  },
+]
 
 export default function AdminShell({ children }: AdminShellProps) {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [userName, setUserName] = useState("Admin User");
-  const [userEmail, setUserEmail] = useState("admin@example.com");
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const [dark, setDark] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [userName, setUserName] = useState("Admin User")
+  const [userEmail, setUserEmail] = useState("admin@example.com")
 
   useEffect(() => {
-    const stored = localStorage.getItem("admin-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const isDark = stored ? stored === "dark" : prefersDark;
+    const stored = localStorage.getItem("admin-theme")
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches
+    const isDark = stored ? stored === "dark" : prefersDark
 
-    setDark(isDark);
-    document.documentElement.classList.toggle("dark", isDark);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("admin-theme", dark ? "dark" : "light");
-  }, [dark]);
+    setDark(isDark)
+    document.documentElement.classList.toggle("dark", isDark)
+  }, [])
 
   useEffect(() => {
-    const storedName = localStorage.getItem("auth_user_name");
-    const storedEmail = localStorage.getItem("auth_user_email");
-    const accessToken = localStorage.getItem("auth_access_token");
-    const role = getStoredRole();
+    document.documentElement.classList.toggle("dark", dark)
+    localStorage.setItem("admin-theme", dark ? "dark" : "light")
+  }, [dark])
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("auth_user_name")
+    const storedEmail = localStorage.getItem("auth_user_email")
+    const accessToken = localStorage.getItem("auth_access_token")
+    const role = getStoredRole()
 
     if (!accessToken) {
-      window.location.href = "/auth/login";
-      return;
+      window.location.href = "/auth/login"
+      return
     }
 
     if (role?.toUpperCase() !== "ADMIN") {
-      window.location.href = "/";
-      return;
+      window.location.href = "/"
+      return
     }
 
-    if (storedName) setUserName(storedName);
-    if (storedEmail) setUserEmail(storedEmail);
-  }, []);
+    if (storedName) setUserName(storedName)
+    if (storedEmail) setUserEmail(storedEmail)
+  }, [])
 
   const pageTitle = useMemo(() => {
-    const found = navItems.find((item) => item.href === pathname);
-    return found?.label ?? "Admin";
-  }, [pathname]);
+    const found = navItems.find((item) => item.href === pathname)
+    return found?.label ?? "Admin"
+  }, [pathname])
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -98,8 +104,11 @@ export default function AdminShell({ children }: AdminShellProps) {
           }`}
         >
           <div className="mb-6 flex items-center justify-between">
-            <Link href="/admin" className="text-2xl font-black tracking-tight text-indigo-600">
-              TailAdmin
+            <Link
+              href="/admin"
+              className="text-2xl font-black tracking-tight text-indigo-600"
+            >
+              PhuTaiAdmin
             </Link>
             <button onClick={() => setOpen(false)} className="lg:hidden">
               <X className="h-5 w-5" />
@@ -108,8 +117,8 @@ export default function AdminShell({ children }: AdminShellProps) {
 
           <nav className="space-y-1">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
+              const isActive = pathname === item.href
+              const Icon = item.icon
               return (
                 <Link
                   key={item.href}
@@ -124,7 +133,7 @@ export default function AdminShell({ children }: AdminShellProps) {
                   <Icon className="h-4 w-4" />
                   {item.label}
                 </Link>
-              );
+              )
             })}
           </nav>
         </aside>
@@ -148,7 +157,11 @@ export default function AdminShell({ children }: AdminShellProps) {
                   className="rounded-xl border border-slate-200 p-2 dark:border-slate-700"
                   aria-label="Toggle theme"
                 >
-                  {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {dark ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
                 </button>
 
                 <button
@@ -166,7 +179,9 @@ export default function AdminShell({ children }: AdminShellProps) {
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
                       <UserCircle2 className="h-5 w-5" />
                     </div>
-                    <span className="hidden text-sm font-semibold sm:block">{userName}</span>
+                    <span className="hidden text-sm font-semibold sm:block">
+                      {userName}
+                    </span>
                   </button>
 
                   {menuOpen && (
@@ -178,8 +193,8 @@ export default function AdminShell({ children }: AdminShellProps) {
 
                       <button
                         onClick={async () => {
-                          await logout();
-                          window.location.href = "/auth/login";
+                          await logout()
+                          window.location.href = "/auth/login"
                         }}
                         className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                       >
@@ -193,7 +208,9 @@ export default function AdminShell({ children }: AdminShellProps) {
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-[1400px] flex-1 p-4 sm:p-6">{children}</main>
+          <main className="mx-auto w-full max-w-[1400px] flex-1 p-4 sm:p-6">
+            {children}
+          </main>
         </div>
       </div>
 
@@ -205,5 +222,5 @@ export default function AdminShell({ children }: AdminShellProps) {
         />
       )}
     </div>
-  );
+  )
 }

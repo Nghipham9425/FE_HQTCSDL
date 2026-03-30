@@ -1,22 +1,22 @@
-import Link from "next/link";
+import Link from "next/link"
 
 type Column<T> = {
-  header: string;
-  render: (row: T) => React.ReactNode;
-};
+  header: string
+  render: (row: T) => React.ReactNode
+}
 
 type EntityTableProps<T> = {
-  title: string;
-  subtitle: string;
-  rows: T[];
-  columns: Column<T>[];
-  total: number;
-  page: number;
-  pageSize: number;
-  basePath: string;
-  queryParams?: Record<string, string | number | undefined>;
-  toolbar?: React.ReactNode;
-};
+  title: string
+  subtitle: string
+  rows: T[]
+  columns: Column<T>[]
+  total: number
+  page: number
+  pageSize: number
+  basePath: string
+  queryParams?: Record<string, string | number | undefined>
+  toolbar?: React.ReactNode
+}
 
 export default function EntityTable<T>({
   title,
@@ -30,23 +30,23 @@ export default function EntityTable<T>({
   queryParams,
   toolbar,
 }: EntityTableProps<T>) {
-  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
-  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1)
+  const safePage = Math.min(Math.max(page, 1), totalPages)
 
   const pageHref = (target: number) => {
-    const params = new URLSearchParams();
-    params.set("page", String(target));
+    const params = new URLSearchParams()
+    params.set("page", String(target))
 
     if (queryParams) {
       for (const [key, value] of Object.entries(queryParams)) {
         if (value !== undefined && value !== "") {
-          params.set(key, String(value));
+          params.set(key, String(value))
         }
       }
     }
 
-    return `${basePath}?${params.toString()}`;
-  };
+    return `${basePath}?${params.toString()}`
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -130,5 +130,5 @@ export default function EntityTable<T>({
         </div>
       </div>
     </div>
-  );
+  )
 }

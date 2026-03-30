@@ -1,16 +1,16 @@
-import EntityTable from "@/components/admin/EntityTable";
-import Link from "next/link";
-import { listTcgCards } from "@/lib/api/admin";
+import EntityTable from "@/components/admin/EntityTable"
+import Link from "next/link"
+import { listTcgCards } from "@/lib/api/admin"
 
 export default async function AdminTcgCardsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string }>
 }) {
-  const params = await searchParams;
-  const page = Math.max(Number(params.page) || 1, 1);
-  const q = params.q?.trim() || "";
-  const data = await listTcgCards(page, 20, q || undefined);
+  const params = await searchParams
+  const page = Math.max(Number(params.page) || 1, 1)
+  const q = params.q?.trim() || ""
+  const data = await listTcgCards(page, 20, q || undefined)
 
   return (
     <EntityTable
@@ -24,7 +24,11 @@ export default async function AdminTcgCardsPage({
       queryParams={{ q: q || undefined }}
       toolbar={
         <>
-          <form action="/admin/tcg-cards" method="get" className="flex items-center gap-2">
+          <form
+            action="/admin/tcg-cards"
+            method="get"
+            className="flex items-center gap-2"
+          >
             <input
               type="text"
               name="q"
@@ -48,9 +52,16 @@ export default async function AdminTcgCardsPage({
         </>
       }
       columns={[
-        { header: "Card ID", render: (row) => <span className="font-semibold">{row.cardId}</span> },
+        {
+          header: "Card ID",
+          render: (row) => <span className="font-semibold">{row.cardId}</span>,
+        },
         { header: "Name", render: (row) => row.name },
-        { header: "Set", render: (row) => `${row.setId}${row.setName ? ` (${row.setName})` : ""}` },
+        {
+          header: "Set",
+          render: (row) =>
+            `${row.setId}${row.setName ? ` (${row.setName})` : ""}`,
+        },
         { header: "No.", render: (row) => row.cardNumber },
         { header: "Rarity", render: (row) => row.rarity ?? "-" },
         {
@@ -66,5 +77,5 @@ export default async function AdminTcgCardsPage({
         },
       ]}
     />
-  );
+  )
 }

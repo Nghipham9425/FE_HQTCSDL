@@ -1,16 +1,16 @@
-import EntityTable from "@/components/admin/EntityTable";
-import { formatDate } from "@/components/admin/format";
-import { listTcgSets } from "@/lib/api/admin";
-import Link from "next/link";
+import EntityTable from "@/components/admin/EntityTable"
+import { formatDate } from "@/components/admin/format"
+import { listTcgSets } from "@/lib/api/admin"
+import Link from "next/link"
 
 export default async function AdminTcgSetsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string }>
 }) {
-  const params = await searchParams;
-  const page = Math.max(Number(params.page) || 1, 1);
-  const data = await listTcgSets(page, 20);
+  const params = await searchParams
+  const page = Math.max(Number(params.page) || 1, 1)
+  const data = await listTcgSets(page, 20)
 
   return (
     <EntityTable
@@ -30,7 +30,10 @@ export default async function AdminTcgSetsPage({
         </Link>
       }
       columns={[
-        { header: "Set ID", render: (row) => <span className="font-semibold">{row.setId}</span> },
+        {
+          header: "Set ID",
+          render: (row) => <span className="font-semibold">{row.setId}</span>,
+        },
         { header: "Name", render: (row) => row.name },
         { header: "Series", render: (row) => row.series ?? "-" },
         { header: "Release", render: (row) => formatDate(row.releaseDate) },
@@ -48,5 +51,5 @@ export default async function AdminTcgSetsPage({
         },
       ]}
     />
-  );
+  )
 }

@@ -1,76 +1,74 @@
-import { API_ROOT } from "@/utils/constant";
+import { API_ROOT } from "@/utils/constant"
 
-const ACCESS_TOKEN_KEY = "auth_access_token";
-const USER_NAME_KEY = "auth_user_name";
-const USER_EMAIL_KEY = "auth_user_email";
-const USER_ROLE_KEY = "auth_user_role";
+const ACCESS_TOKEN_KEY = "auth_access_token"
+const USER_NAME_KEY = "auth_user_name"
+const USER_EMAIL_KEY = "auth_user_email"
+const USER_ROLE_KEY = "auth_user_role"
 
 export type AuthUser = {
-  id: number;
-  email: string;
-  fullName: string;
-  phone?: string | null;
-  country?: string | null;
-  defaultShippingAddress?: string | null;
-  role: string;
-};
+  id: number
+  email: string
+  fullName: string
+  phone?: string | null
+  country?: string | null
+  role: string
+}
 
 export type AuthTokenResponse = {
-  accessToken: string;
-  accessTokenExpiresAt: string;
-  user: AuthUser;
-};
+  accessToken: string
+  accessTokenExpiresAt: string
+  user: AuthUser
+}
 
 type LoginPayload = {
-  email: string;
-  password: string;
-};
+  email: string
+  password: string
+}
 
 type RegisterPayload = {
-  email: string;
-  password: string;
-  fullName: string;
-};
+  email: string
+  password: string
+  fullName: string
+}
 
 export type ProfileUpdatePayload = {
-  fullName: string;
-  phone?: string | null;
-  country?: string | null;
-  defaultShippingAddress?: string | null;
-};
+  fullName: string
+  phone?: string | null
+  country?: string | null
+}
 
 export function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  if (typeof window === "undefined") return null
+  return localStorage.getItem(ACCESS_TOKEN_KEY)
 }
 
 export function getStoredRole(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(USER_ROLE_KEY);
+  if (typeof window === "undefined") return null
+  return localStorage.getItem(USER_ROLE_KEY)
 }
 
 export function getPostLoginPath(role?: string | null): string {
-  return role?.toUpperCase() === "ADMIN" ? "/admin" : "/";
+  return role?.toUpperCase() === "ADMIN" ? "/admin" : "/"
 }
 
 export function persistSession(result: AuthTokenResponse): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") return
 
-  localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken);
-  localStorage.setItem(USER_NAME_KEY, result.user.fullName);
-  localStorage.setItem(USER_EMAIL_KEY, result.user.email);
-  localStorage.setItem(USER_ROLE_KEY, result.user.role);
-  localStorage.setItem("auth_logged_in", "true");
+  localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken)
+  localStorage.setItem(USER_NAME_KEY, result.user.fullName)
+  localStorage.setItem(USER_EMAIL_KEY, result.user.email)
+  localStorage.setItem(USER_ROLE_KEY, result.user.role)
+  localStorage.setItem("auth_logged_in", "true")
 }
 
 export function clearSession(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") return
 
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(USER_NAME_KEY);
-  localStorage.removeItem(USER_EMAIL_KEY);
-  localStorage.removeItem(USER_ROLE_KEY);
-  localStorage.removeItem("auth_logged_in");
+  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(USER_NAME_KEY)
+  localStorage.removeItem(USER_EMAIL_KEY)
+  localStorage.removeItem(USER_ROLE_KEY)
+  localStorage.removeItem("auth_logged_in")
 }
 
 async function authRequest<T>(path: string, init: RequestInit): Promise<T> {
@@ -85,29 +83,29 @@ async function authRequest<T>(path: string, init: RequestInit): Promise<T> {
         ...(init.headers ?? {}),
       },
       cache: "no-store",
-    });
+    })
 
-  const token = getAccessToken();
-  let response = await makeRequest(token);
+  const token = getAccessToken()
+  let response = await makeRequest(token)
 
   if (response.status === 401 && typeof window !== "undefined") {
-    const newToken = await refreshAccessToken();
-    response = await makeRequest(newToken);
+    const newToken = await refreshAccessToken()
+    response = await makeRequest(newToken)
   }
 
   if (!response.ok) {
-    let message = `Auth API failed: ${response.status}`;
+    let message = `Auth API failed: ${response.status}`
     try {
-      const body = (await response.json()) as { message?: string };
-      if (body.message) message = body.message;
+      const body = (await response.json()) as { message?: string }
+      if (body.message) message = body.message
     } catch {
       // keep fallback
     }
-    throw new Error(message);
+    throw new Error(message)
   }
 
-  if (response.status === 204) return null as T;
-  return (await response.json()) as T;
+  if (response.status === 204) return null as T
+  return (await response.json()) as T
 }
 
 export async function login(payload: LoginPayload): Promise<AuthTokenResponse> {
@@ -119,25 +117,27 @@ export async function login(payload: LoginPayload): Promise<AuthTokenResponse> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-  });
+  })
 
   if (!response.ok) {
-    let message = `Login failed: ${response.status}`;
+    let message = `Login failed: ${response.status}`
     try {
-      const body = (await response.json()) as { message?: string };
-      if (body.message) message = body.message;
+      const body = (await response.json()) as { message?: string }
+      if (body.message) message = body.message
     } catch {
       // Keep fallback error message.
     }
-    throw new Error(message);
+    throw new Error(message)
   }
 
-  const result = (await response.json()) as AuthTokenResponse;
-  persistSession(result);
-  return result;
+  const result = (await response.json()) as AuthTokenResponse
+  persistSession(result)
+  return result
 }
 
-export async function register(payload: RegisterPayload): Promise<AuthTokenResponse> {
+export async function register(
+  payload: RegisterPayload,
+): Promise<AuthTokenResponse> {
   const response = await fetch(`${API_ROOT}/auth/register`, {
     method: "POST",
     credentials: "include",
@@ -146,22 +146,22 @@ export async function register(payload: RegisterPayload): Promise<AuthTokenRespo
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-  });
+  })
 
   if (!response.ok) {
-    let message = `Register failed: ${response.status}`;
+    let message = `Register failed: ${response.status}`
     try {
-      const body = (await response.json()) as { message?: string };
-      if (body.message) message = body.message;
+      const body = (await response.json()) as { message?: string }
+      if (body.message) message = body.message
     } catch {
       // Keep fallback error message.
     }
-    throw new Error(message);
+    throw new Error(message)
   }
 
-  const result = (await response.json()) as AuthTokenResponse;
-  persistSession(result);
-  return result;
+  const result = (await response.json()) as AuthTokenResponse
+  persistSession(result)
+  return result
 }
 
 export async function refreshAccessToken(): Promise<string> {
@@ -169,16 +169,16 @@ export async function refreshAccessToken(): Promise<string> {
     method: "POST",
     credentials: "include",
     headers: { Accept: "application/json" },
-  });
+  })
 
   if (!response.ok) {
-    clearSession();
-    throw new Error("Session expired");
+    clearSession()
+    throw new Error("Session expired")
   }
 
-  const result = (await response.json()) as AuthTokenResponse;
-  persistSession(result);
-  return result.accessToken;
+  const result = (await response.json()) as AuthTokenResponse
+  persistSession(result)
+  return result.accessToken
 }
 
 export async function logout(): Promise<void> {
@@ -187,26 +187,28 @@ export async function logout(): Promise<void> {
       method: "POST",
       credentials: "include",
       headers: { Accept: "application/json" },
-    });
+    })
   } finally {
-    clearSession();
+    clearSession()
   }
 }
 
 export function getMe(): Promise<AuthUser> {
-  return authRequest<AuthUser>("/auth/me", { method: "GET" });
+  return authRequest<AuthUser>("/auth/me", { method: "GET" })
 }
 
-export async function updateMe(payload: ProfileUpdatePayload): Promise<AuthUser> {
+export async function updateMe(
+  payload: ProfileUpdatePayload,
+): Promise<AuthUser> {
   const user = await authRequest<AuthUser>("/auth/me", {
     method: "PUT",
     body: JSON.stringify(payload),
-  });
+  })
 
   if (typeof window !== "undefined") {
-    localStorage.setItem(USER_NAME_KEY, user.fullName);
-    localStorage.setItem(USER_EMAIL_KEY, user.email);
+    localStorage.setItem(USER_NAME_KEY, user.fullName)
+    localStorage.setItem(USER_EMAIL_KEY, user.email)
   }
 
-  return user;
+  return user
 }

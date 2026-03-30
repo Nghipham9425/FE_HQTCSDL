@@ -1,62 +1,66 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { getMyOrders } from "@/lib/api/orders";
-import type { OrderListItem } from "@/lib/types/order";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { getMyOrders } from "@/lib/api/orders"
+import type { OrderListItem } from "@/lib/types/order"
 
 function formatPrice(value: number) {
-  return value.toLocaleString("vi-VN") + "đ";
+  return value.toLocaleString("vi-VN") + "đ"
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("vi-VN");
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString("vi-VN")
 }
 
 function statusClass(status: string) {
   switch (status.toUpperCase()) {
     case "PENDING":
-      return "bg-amber-100 text-amber-800";
+      return "bg-amber-100 text-amber-800"
     case "CONFIRMED":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-100 text-blue-800"
     case "SHIPPED":
-      return "bg-indigo-100 text-indigo-800";
+      return "bg-indigo-100 text-indigo-800"
     case "DONE":
-      return "bg-green-100 text-green-800";
+      return "bg-green-100 text-green-800"
     case "CANCELLED":
-      return "bg-rose-100 text-rose-800";
+      return "bg-rose-100 text-rose-800"
     default:
-      return "bg-slate-100 text-slate-700";
+      return "bg-slate-100 text-slate-700"
   }
 }
 
 export default function AccountOrdersPage() {
-  const [orders, setOrders] = useState<OrderListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [orders, setOrders] = useState<OrderListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
 
-    (async () => {
+    ;(async () => {
       try {
-        const data = await getMyOrders();
-        if (!mounted) return;
-        setOrders(data);
+        const data = await getMyOrders()
+        if (!mounted) return
+        setOrders(data)
       } catch (err) {
-        if (!mounted) return;
-        setError(err instanceof Error ? err.message : "Không tải được danh sách đơn hàng.");
+        if (!mounted) return
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Không tải được danh sách đơn hàng.",
+        )
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoading(false)
       }
-    })();
+    })()
 
     return () => {
-      mounted = false;
-    };
-  }, []);
+      mounted = false
+    }
+  }, [])
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10">
@@ -71,9 +75,13 @@ export default function AccountOrdersPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">Đang tải đơn hàng...</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
+          Đang tải đơn hàng...
+        </div>
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700 shadow-sm">{error}</div>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700 shadow-sm">
+          {error}
+        </div>
       ) : orders.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
           Bạn chưa có đơn hàng nào.
@@ -90,19 +98,28 @@ export default function AccountOrdersPage() {
           </div>
 
           {orders.map((order) => (
-            <div key={order.id} className="grid grid-cols-1 gap-2 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid-cols-12 md:items-center">
+            <div
+              key={order.id}
+              className="grid grid-cols-1 gap-2 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid-cols-12 md:items-center"
+            >
               <div className="md:col-span-2">
                 <p className="text-xs text-slate-500 md:hidden">Mã đơn</p>
-                <p className="text-sm font-semibold text-slate-900">#{order.id}</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  #{order.id}
+                </p>
               </div>
 
               <div className="md:col-span-2">
                 <p className="text-xs text-slate-500 md:hidden">Ngày đặt</p>
-                <p className="text-sm text-slate-700">{formatDate(order.orderDate)}</p>
+                <p className="text-sm text-slate-700">
+                  {formatDate(order.orderDate)}
+                </p>
               </div>
 
               <div className="md:col-span-2 md:text-center">
-                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(order.orderStatus)}`}>
+                <span
+                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(order.orderStatus)}`}
+                >
                   {order.orderStatus}
                 </span>
               </div>
@@ -114,7 +131,9 @@ export default function AccountOrdersPage() {
 
               <div className="md:col-span-2 md:text-right">
                 <p className="text-xs text-slate-500 md:hidden">Tổng tiền</p>
-                <p className="text-sm font-semibold text-(--brand-red)">{formatPrice(order.finalAmount)}</p>
+                <p className="text-sm font-semibold text-(--brand-red)">
+                  {formatPrice(order.finalAmount)}
+                </p>
               </div>
 
               <div className="md:col-span-2 md:text-right">
@@ -130,5 +149,5 @@ export default function AccountOrdersPage() {
         </div>
       )}
     </section>
-  );
+  )
 }
