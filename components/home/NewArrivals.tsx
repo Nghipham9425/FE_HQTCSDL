@@ -1,27 +1,27 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-import ProductCard from "@/components/ui/ProductCard";
-import SectionHeader from "@/components/ui/SectionHeader";
-import { type Product } from "@/lib/api/products";
-import { type ProductCategory } from "@/lib/types/product-api";
+"use client"
+import Link from "next/link"
+import Image from "next/image"
+import { useState } from "react"
+import ProductCard from "@/components/ui/ProductCard"
+import SectionHeader from "@/components/ui/SectionHeader"
+import { type Product } from "@/lib/api/products"
+import { type ProductCategory } from "@/lib/types/product-api"
 
-type TabKey = Extract<ProductCategory, "console" | "accessory" | "pokemon-tcg">;
+type TabKey = Extract<ProductCategory, "console" | "accessory" | "pokemon-tcg">
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "console", label: "Console" },
   { key: "accessory", label: "Accessory" },
   { key: "pokemon-tcg", label: "Pokemon TCG" },
-];
+]
 
 interface NewArrivalsProps {
-  productsByCategory: Record<TabKey, Product[]>;
+  productsByCategory: Record<TabKey, Product[]>
 }
 
 export default function NewArrivals({ productsByCategory }: NewArrivalsProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>("console");
-  const products = productsByCategory[activeTab] ?? [];
+  const [activeTab, setActiveTab] = useState<TabKey>("console")
+  const products = productsByCategory[activeTab] ?? []
 
   return (
     <section className="mx-auto max-w-screen-xl px-4 py-10">
@@ -49,7 +49,10 @@ export default function NewArrivals({ productsByCategory }: NewArrivalsProps) {
       <div className="flex gap-4">
         {/* Promo banner (desktop) */}
         <div className="hidden w-48 shrink-0 overflow-hidden rounded-2xl lg:block">
-          <Link href="/products?sort=newest" className="group relative block h-full min-h-[400px]">
+          <Link
+            href="/products?sort=newest"
+            className="group relative block h-full min-h-[400px]"
+          >
             <Image
               src="https://jawbreakers.cards/cdn/shop/files/jawbreakers_pokemon_vertical_banner.jpg?v=1665508277&width=1500"
               alt="Hàng mới về"
@@ -62,7 +65,9 @@ export default function NewArrivals({ productsByCategory }: NewArrivalsProps) {
               <span className="rounded-full bg-yellow-400 px-3 py-0.5 text-[10px] font-black uppercase tracking-widest text-gray-900">
                 Mới nhất
               </span>
-              <p className="text-sm font-black uppercase text-white drop-shadow">Xem ngay</p>
+              <p className="text-sm font-black uppercase text-white drop-shadow">
+                Xem ngay
+              </p>
             </div>
           </Link>
         </div>
@@ -77,5 +82,5 @@ export default function NewArrivals({ productsByCategory }: NewArrivalsProps) {
         </div>
       </div>
     </section>
-  );
+  )
 }

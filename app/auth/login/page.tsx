@@ -1,31 +1,31 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-import { Eye, EyeOff, LogIn } from "lucide-react";
-import { getPostLoginPath, login } from "@/lib/api/auth";
+"use client"
+import Link from "next/link"
+import Image from "next/image"
+import { useState } from "react"
+import { Eye, EyeOff, LogIn } from "lucide-react"
+import { getPostLoginPath, login } from "@/lib/api/auth"
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const email = String(formData.get("email") || "").trim();
-    const password = String(formData.get("password") || "");
+    e.preventDefault()
+    setLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const email = String(formData.get("email") || "").trim()
+    const password = String(formData.get("password") || "")
 
-    setError(null);
+    setError(null)
 
     try {
-      const result = await login({ email, password });
-      window.location.href = getPostLoginPath(result.user.role);
+      const result = await login({ email, password })
+      window.location.href = getPostLoginPath(result.user.role)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
+      setError(err instanceof Error ? err.message : "Đăng nhập thất bại")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -49,14 +49,21 @@ export default function LoginPage() {
                 Cardgame<span className="text-[var(--brand-red)]">Center</span>
               </span>
             </Link>
-            <h1 className="mt-2 text-2xl font-extrabold text-gray-900">Đăng nhập</h1>
-            <p className="text-sm text-gray-500">Chào mừng bạn quay lại CardgameCenter!</p>
+            <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+              Đăng nhập
+            </h1>
+            <p className="text-sm text-gray-500">
+              Chào mừng bạn quay lại CardgameCenter!
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-semibold text-gray-700"
+              >
                 Email
               </label>
               <input
@@ -73,10 +80,16 @@ export default function LoginPage() {
             {/* Password */}
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-semibold text-gray-700"
+                >
                   Mật khẩu
                 </label>
-                <Link href="/auth/forgot-password" className="text-xs text-[var(--brand-red)] hover:underline">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs text-[var(--brand-red)] hover:underline"
+                >
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -140,7 +153,10 @@ export default function LoginPage() {
           {/* Register link */}
           <p className="text-center text-sm text-gray-600">
             Chưa có tài khoản?{" "}
-            <Link href="/auth/register" className="font-bold text-[var(--brand-red)] hover:underline">
+            <Link
+              href="/auth/register"
+              className="font-bold text-[var(--brand-red)] hover:underline"
+            >
               Đăng ký ngay
             </Link>
           </p>
@@ -148,12 +164,19 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-xs text-gray-400">
           Bằng cách đăng nhập, bạn đồng ý với{" "}
-          <Link href="/policy/privacy" className="underline hover:text-gray-700">Chính sách bảo mật</Link>
-          {" "}và{" "}
-          <Link href="/policy/terms" className="underline hover:text-gray-700">Điều khoản dịch vụ</Link>
-          {" "}của Bánh Mì Games.
+          <Link
+            href="/policy/privacy"
+            className="underline hover:text-gray-700"
+          >
+            Chính sách bảo mật
+          </Link>{" "}
+          và{" "}
+          <Link href="/policy/terms" className="underline hover:text-gray-700">
+            Điều khoản dịch vụ
+          </Link>{" "}
+          của Bánh Mì Games.
         </p>
       </div>
     </div>
-  );
+  )
 }

@@ -1,16 +1,14 @@
-"use client";
-import Link from "next/link";
-import { useState, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+"use client"
+import Link from "next/link"
+import { useState, useRef } from "react"
+import { ChevronDown } from "lucide-react"
 
 const navItems = [
   { label: "TRANG CHỦ", href: "/" },
   {
     label: "CONSOLE",
     href: "/products?category=console",
-    children: [
-      { label: "Tất cả Console", href: "/products?category=console" },
-    ],
+    children: [{ label: "Tất cả Console", href: "/products?category=console" }],
   },
   {
     label: "ACCESSORY",
@@ -31,19 +29,19 @@ const navItems = [
   { label: "GIỚI THIỆU", href: "/about" },
   { label: "LIÊN HỆ", href: "/contact" },
   { label: "TRACKING ORDER", href: "/tracking" },
-];
+]
 
 export default function NavMenu() {
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function onEnter(label: string) {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setOpenMenu(label);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setOpenMenu(label)
   }
 
   function onLeave() {
-    timeoutRef.current = setTimeout(() => setOpenMenu(null), 150);
+    timeoutRef.current = setTimeout(() => setOpenMenu(null), 150)
   }
 
   return (
@@ -86,5 +84,5 @@ export default function NavMenu() {
         ))}
       </div>
     </nav>
-  );
+  )
 }

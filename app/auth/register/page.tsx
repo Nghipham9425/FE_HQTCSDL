@@ -1,40 +1,40 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-import { Eye, EyeOff, UserPlus } from "lucide-react";
-import { getPostLoginPath, register } from "@/lib/api/auth";
+"use client"
+import Link from "next/link"
+import Image from "next/image"
+import { useState } from "react"
+import { Eye, EyeOff, UserPlus } from "lucide-react"
+import { getPostLoginPath, register } from "@/lib/api/auth"
 
 export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    const formData = new FormData(e.currentTarget);
+    e.preventDefault()
+    setLoading(true)
+    const formData = new FormData(e.currentTarget)
 
-    const fullName = String(formData.get("fullname") || "").trim();
-    const email = String(formData.get("email") || "").trim();
-    const password = String(formData.get("password") || "");
-    const confirmPassword = String(formData.get("confirmPassword") || "");
+    const fullName = String(formData.get("fullname") || "").trim()
+    const email = String(formData.get("email") || "").trim()
+    const password = String(formData.get("password") || "")
+    const confirmPassword = String(formData.get("confirmPassword") || "")
 
-    setError(null);
+    setError(null)
 
     if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
-      setLoading(false);
-      return;
+      setError("Mật khẩu xác nhận không khớp")
+      setLoading(false)
+      return
     }
 
     try {
-      const result = await register({ fullName, email, password });
-      window.location.href = getPostLoginPath(result.user.role);
+      const result = await register({ fullName, email, password })
+      window.location.href = getPostLoginPath(result.user.role)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đăng ký thất bại");
+      setError(err instanceof Error ? err.message : "Đăng ký thất bại")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -58,14 +58,21 @@ export default function RegisterPage() {
                 Cardgame<span className="text-[var(--brand-red)]">Center</span>
               </span>
             </Link>
-            <h1 className="mt-2 text-2xl font-extrabold text-gray-900">Đăng ký</h1>
-            <p className="text-sm text-gray-500">Tạo tài khoản để mua sắm dễ dàng hơn!</p>
+            <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+              Đăng ký
+            </h1>
+            <p className="text-sm text-gray-500">
+              Tạo tài khoản để mua sắm dễ dàng hơn!
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Full name */}
             <div>
-              <label htmlFor="fullname" className="mb-1.5 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="fullname"
+                className="mb-1.5 block text-sm font-semibold text-gray-700"
+              >
                 Họ và tên
               </label>
               <input
@@ -81,7 +88,10 @@ export default function RegisterPage() {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-semibold text-gray-700"
+              >
                 Email
               </label>
               <input
@@ -97,7 +107,10 @@ export default function RegisterPage() {
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="mb-1.5 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="phone"
+                className="mb-1.5 block text-sm font-semibold text-gray-700"
+              >
                 Số điện thoại
               </label>
               <input
@@ -113,7 +126,10 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-semibold text-gray-700"
+              >
                 Mật khẩu
               </label>
               <div className="relative">
@@ -140,7 +156,10 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirm-password" className="mb-1.5 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="confirm-password"
+                className="mb-1.5 block text-sm font-semibold text-gray-700"
+              >
                 Xác nhận mật khẩu
               </label>
               <input
@@ -163,13 +182,22 @@ export default function RegisterPage() {
                 required
                 className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-[var(--brand-navy)]"
               />
-              <label htmlFor="terms" className="text-sm text-gray-600 leading-snug">
+              <label
+                htmlFor="terms"
+                className="text-sm text-gray-600 leading-snug"
+              >
                 Tôi đồng ý với{" "}
-                <Link href="/policy/terms" className="text-[var(--brand-red)] hover:underline font-semibold">
+                <Link
+                  href="/policy/terms"
+                  className="text-[var(--brand-red)] hover:underline font-semibold"
+                >
                   Điều khoản dịch vụ
                 </Link>{" "}
                 và{" "}
-                <Link href="/policy/privacy" className="text-[var(--brand-red)] hover:underline font-semibold">
+                <Link
+                  href="/policy/privacy"
+                  className="text-[var(--brand-red)] hover:underline font-semibold"
+                >
                   Chính sách bảo mật
                 </Link>
               </label>
@@ -194,12 +222,15 @@ export default function RegisterPage() {
           {/* Login link */}
           <p className="mt-5 text-center text-sm text-gray-600">
             Đã có tài khoản?{" "}
-            <Link href="/auth/login" className="font-bold text-[var(--brand-red)] hover:underline">
+            <Link
+              href="/auth/login"
+              className="font-bold text-[var(--brand-red)] hover:underline"
+            >
               Đăng nhập
             </Link>
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -141,7 +141,10 @@ export default function Header() {
             {accountMenuOpen && (
               <div className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
                 {isAdmin && (
-                  <Link href="/admin" className="block rounded-lg px-3 py-2 text-sm hover:bg-gray-50">
+                  <Link
+                    href="/admin"
+                    className="block rounded-lg px-3 py-2 text-sm hover:bg-gray-50"
+                  >
                     Vào trang admin
                   </Link>
                 )}
@@ -268,7 +271,9 @@ export default function Header() {
             ))}
             {isLoggedIn ? (
               <div className="mt-2 border-t border-gray-100 pt-3">
-                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Tài khoản</p>
+                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  Tài khoản
+                </p>
                 <div className="flex flex-col gap-1">
                   {isAdmin && (
                     <Link

@@ -1,17 +1,21 @@
-import Link from "next/link";
-import EntityTable from "@/components/admin/EntityTable";
-import { boolBadge, formatCurrency, formatDate } from "@/components/admin/format";
-import { listProducts } from "@/lib/api/admin";
+import Link from "next/link"
+import EntityTable from "@/components/admin/EntityTable"
+import {
+  boolBadge,
+  formatCurrency,
+  formatDate,
+} from "@/components/admin/format"
+import { listProducts } from "@/lib/api/admin"
 
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string }>
 }) {
-  const params = await searchParams;
-  const page = Math.max(Number(params.page) || 1, 1);
-  const q = params.q?.trim() || "";
-  const data = await listProducts(page, 20, q || undefined);
+  const params = await searchParams
+  const page = Math.max(Number(params.page) || 1, 1)
+  const q = params.q?.trim() || ""
+  const data = await listProducts(page, 20, q || undefined)
 
   return (
     <EntityTable
@@ -25,7 +29,11 @@ export default async function AdminProductsPage({
       queryParams={{ q: q || undefined }}
       toolbar={
         <>
-          <form action="/admin/products" method="get" className="flex items-center gap-2">
+          <form
+            action="/admin/products"
+            method="get"
+            className="flex items-center gap-2"
+          >
             <input
               type="text"
               name="q"
@@ -50,7 +58,10 @@ export default async function AdminProductsPage({
       }
       columns={[
         { header: "ID", render: (row) => row.id },
-        { header: "SKU", render: (row) => <span className="font-semibold">{row.sku}</span> },
+        {
+          header: "SKU",
+          render: (row) => <span className="font-semibold">{row.sku}</span>,
+        },
         { header: "Name", render: (row) => row.name },
         { header: "Type", render: (row) => row.productType },
         { header: "Price", render: (row) => formatCurrency(row.price) },
@@ -60,12 +71,15 @@ export default async function AdminProductsPage({
         {
           header: "Action",
           render: (row) => (
-            <Link href={`/admin/products/edit/${row.id}`} className="text-indigo-600 underline">
+            <Link
+              href={`/admin/products/edit/${row.id}`}
+              className="text-indigo-600 underline"
+            >
               Edit
             </Link>
           ),
         },
       ]}
     />
-  );
+  )
 }

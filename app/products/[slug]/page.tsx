@@ -1,57 +1,57 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { fetchProductById, fetchRelatedProducts } from "@/lib/api/products";
-import ImageGallery from "@/components/product/ImageGallery";
-import ProductInfo from "@/components/product/ProductInfo";
-import RelatedProducts from "@/components/product/RelatedProducts";
+import { notFound } from "next/navigation"
+import Link from "next/link"
+import { ChevronRight } from "lucide-react"
+import { fetchProductById, fetchRelatedProducts } from "@/lib/api/products"
+import ImageGallery from "@/components/product/ImageGallery"
+import ProductInfo from "@/components/product/ProductInfo"
+import RelatedProducts from "@/components/product/RelatedProducts"
 
 interface ProductDetailPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: ProductDetailPageProps) {
-  const { slug } = await params;
-  const productId = Number(slug);
-  if (!Number.isFinite(productId)) return { title: "Sản phẩm không tồn tại" };
+  const { slug } = await params
+  const productId = Number(slug)
+  if (!Number.isFinite(productId)) return { title: "Sản phẩm không tồn tại" }
 
-  let product = null;
+  let product = null
   try {
-    product = await fetchProductById(productId);
+    product = await fetchProductById(productId)
   } catch {
-    product = null;
+    product = null
   }
 
-  if (!product) return { title: "Sản phẩm không tồn tại" };
+  if (!product) return { title: "Sản phẩm không tồn tại" }
   return {
     title: `${product.name} – Bánh Mì Games`,
     description: product.descriptions ?? undefined,
-  };
+  }
 }
 
-export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const { slug } = await params;
-  const productId = Number(slug);
-  if (!Number.isFinite(productId)) notFound();
+export default async function ProductDetailPage({
+  params,
+}: ProductDetailPageProps) {
+  const { slug } = await params
+  const productId = Number(slug)
+  if (!Number.isFinite(productId)) notFound()
 
-  let product = null;
+  let product = null
   try {
-    product = await fetchProductById(productId);
+    product = await fetchProductById(productId)
   } catch {
-    product = null;
+    product = null
   }
 
-  if (!product) notFound();
+  if (!product) notFound()
 
-  const related = await fetchRelatedProducts(product, 6);
+  const related = await fetchRelatedProducts(product, 6)
 
-  const categoryHref = product.productType === "TCG_CARD"
-    ? "pokemon-tcg"
-    : "ps5";
+  const categoryHref =
+    product.productType === "TCG_CARD" ? "pokemon-tcg" : "ps5"
 
-  const categoryLabel = product.productType === "TCG_CARD"
-    ? "Pokemon TCG"
-    : "Console";
+  const categoryLabel =
+    product.productType === "TCG_CARD" ? "Pokemon TCG" : "Console"
 
   return (
     <div className="pb-16">
@@ -69,7 +69,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             {categoryLabel}
           </Link>
           <ChevronRight size={14} />
-          <span className="line-clamp-1 font-medium text-gray-800">{product.name}</span>
+          <span className="line-clamp-1 font-medium text-gray-800">
+            {product.name}
+          </span>
         </nav>
       </div>
 
@@ -90,8 +92,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         {/* Description */}
         {product.descriptions && (
           <div className="mt-10 rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="mb-3 text-lg font-bold text-gray-800">Mô tả sản phẩm</h2>
-            <p className="text-sm leading-relaxed text-gray-600">{product.descriptions}</p>
+            <h2 className="mb-3 text-lg font-bold text-gray-800">
+              Mô tả sản phẩm
+            </h2>
+            <p className="text-sm leading-relaxed text-gray-600">
+              {product.descriptions}
+            </p>
           </div>
         )}
       </div>
@@ -99,5 +105,5 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       {/* Related */}
       <RelatedProducts products={related} />
     </div>
-  );
+  )
 }

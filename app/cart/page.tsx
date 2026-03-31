@@ -1,23 +1,40 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { Minus, Plus, Trash2, ShoppingBag, ChevronRight, ArrowLeft } from "lucide-react";
-import { useCartStore } from "@/lib/stores/cartStore";
+"use client"
+import Link from "next/link"
+import Image from "next/image"
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  ChevronRight,
+  ArrowLeft,
+} from "lucide-react"
+import { useCartStore } from "@/lib/stores/cartStore"
 
 function formatPrice(p: number) {
-  return p.toLocaleString("vi-VN") + "đ";
+  return p.toLocaleString("vi-VN") + "đ"
 }
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totalItems, totalPrice, clearCart } =
-    useCartStore();
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    totalItems,
+    totalPrice,
+    clearCart,
+  } = useCartStore()
 
   if (items.length === 0) {
     return (
       <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-6 px-4 py-24 text-center">
         <ShoppingBag size={72} className="text-gray-300" />
-        <h1 className="text-2xl font-extrabold text-gray-800">Giỏ hàng trống</h1>
-        <p className="text-gray-500">Bạn chưa thêm sản phẩm nào vào giỏ hàng.</p>
+        <h1 className="text-2xl font-extrabold text-gray-800">
+          Giỏ hàng trống
+        </h1>
+        <p className="text-gray-500">
+          Bạn chưa thêm sản phẩm nào vào giỏ hàng.
+        </p>
         <Link
           href="/products"
           className="rounded-xl bg-[var(--brand-red)] px-8 py-3 font-bold text-white hover:bg-[var(--brand-red-dark)] transition-colors"
@@ -25,14 +42,16 @@ export default function CartPage() {
           Mua sắm ngay
         </Link>
       </div>
-    );
+    )
   }
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 py-8">
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-1 text-sm text-gray-500">
-        <Link href="/" className="hover:text-[var(--brand-red)]">Trang chủ</Link>
+        <Link href="/" className="hover:text-[var(--brand-red)]">
+          Trang chủ
+        </Link>
         <ChevronRight size={14} />
         <span className="font-medium text-gray-800">Giỏ hàng</span>
       </nav>
@@ -62,7 +81,10 @@ export default function CartPage() {
                 <div className="col-span-12 flex items-center gap-3 md:col-span-6">
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                     <Image
-                      src={item.product.thumbnail || "https://picsum.photos/seed/cardgame-placeholder/400/500"}
+                      src={
+                        item.product.thumbnail ||
+                        "https://picsum.photos/seed/cardgame-placeholder/400/500"
+                      }
                       alt={item.product.name}
                       fill
                       sizes="80px"
@@ -76,7 +98,9 @@ export default function CartPage() {
                     >
                       {item.product.name}
                     </Link>
-                    <span className="text-xs text-gray-400">{item.product.productType}</span>
+                    <span className="text-xs text-gray-400">
+                      {item.product.productType}
+                    </span>
                     {/* Mobile price */}
                     <span className="font-bold text-[var(--brand-red)] md:hidden">
                       {formatPrice(item.product.price ?? 0)}
@@ -92,15 +116,22 @@ export default function CartPage() {
                 {/* Quantity */}
                 <div className="col-span-5 flex items-center justify-start gap-1 md:col-span-2 md:justify-center">
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                    onClick={() =>
+                      updateQuantity(item.product.id, item.quantity - 1)
+                    }
                     className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 hover:bg-gray-100 transition-colors"
                   >
                     <Minus size={12} />
                   </button>
-                  <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
+                  <span className="w-8 text-center text-sm font-semibold">
+                    {item.quantity}
+                  </span>
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 hover:bg-gray-100 transition-colors"
+                    disabled={item.quantity >= Math.max(0, item.product.stock)}
+                    onClick={() =>
+                      updateQuantity(item.product.id, item.quantity + 1)
+                    }
+                    className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Plus size={12} />
                   </button>
@@ -153,7 +184,9 @@ export default function CartPage() {
         {/* Order summary */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-base font-extrabold text-gray-800">Tóm tắt đơn hàng</h2>
+            <h2 className="mb-4 text-base font-extrabold text-gray-800">
+              Tóm tắt đơn hàng
+            </h2>
 
             <div className="space-y-2 text-sm text-gray-700">
               <div className="flex justify-between">
@@ -167,7 +200,9 @@ export default function CartPage() {
               <hr className="border-gray-200" />
               <div className="flex justify-between text-base font-extrabold text-gray-900">
                 <span>Tổng cộng</span>
-                <span className="text-[var(--brand-red)]">{formatPrice(totalPrice())}</span>
+                <span className="text-[var(--brand-red)]">
+                  {formatPrice(totalPrice())}
+                </span>
               </div>
             </div>
 
@@ -200,5 +235,5 @@ export default function CartPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

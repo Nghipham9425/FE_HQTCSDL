@@ -1,16 +1,16 @@
-import EntityTable from "@/components/admin/EntityTable";
-import { boolBadge } from "@/components/admin/format";
-import { listPaymentMethods } from "@/lib/api/admin";
-import Link from "next/link";
+import EntityTable from "@/components/admin/EntityTable"
+import { boolBadge } from "@/components/admin/format"
+import { listPaymentMethods } from "@/lib/api/admin"
+import Link from "next/link"
 
 export default async function AdminPaymentMethodsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string }>
 }) {
-  const params = await searchParams;
-  const page = Math.max(Number(params.page) || 1, 1);
-  const data = await listPaymentMethods(page, 20);
+  const params = await searchParams
+  const page = Math.max(Number(params.page) || 1, 1)
+  const data = await listPaymentMethods(page, 20)
 
   return (
     <EntityTable
@@ -31,18 +31,26 @@ export default async function AdminPaymentMethodsPage({
       }
       columns={[
         { header: "ID", render: (row) => row.id },
-        { header: "Method", render: (row) => <span className="font-semibold">{row.methodName}</span> },
+        {
+          header: "Method",
+          render: (row) => (
+            <span className="font-semibold">{row.methodName}</span>
+          ),
+        },
         { header: "Payments", render: (row) => row.paymentCount },
         { header: "Status", render: (row) => boolBadge(row.isActive) },
         {
           header: "Action",
           render: (row) => (
-            <Link href={`/admin/payment-methods/edit/${row.id}`} className="text-indigo-600 underline">
+            <Link
+              href={`/admin/payment-methods/edit/${row.id}`}
+              className="text-indigo-600 underline"
+            >
               Edit
             </Link>
           ),
         },
       ]}
     />
-  );
+  )
 }

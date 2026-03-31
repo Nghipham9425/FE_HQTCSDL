@@ -35,7 +35,9 @@ function getAuthHeaders(): HeadersInit {
   return { Authorization: `Bearer ${token}` };
 }
 
-async function refreshAndRetry<T>(executor: (headers: HeadersInit) => Promise<Response>): Promise<T> {
+async function refreshAndRetry<T>(
+  executor: (headers: HeadersInit) => Promise<Response>,
+): Promise<T> {
   await refreshAccessToken();
   const retry = await executor(getAuthHeaders());
 
@@ -124,11 +126,18 @@ async function adminRequest<T>(path: string, init: RequestInit): Promise<T> {
 }
 
 export function listProducts(page = 1, pageSize = 20, q?: string) {
-  return adminGet<PagedResponse<AdminProduct>>("/products", { page, pageSize, q });
+  return adminGet<PagedResponse<AdminProduct>>("/products", {
+    page,
+    pageSize,
+    q,
+  });
 }
 
 export function listCategories(page = 1, pageSize = 20) {
-  return adminGet<PagedResponse<AdminCategory>>("/categories", { page, pageSize });
+  return adminGet<PagedResponse<AdminCategory>>("/categories", {
+    page,
+    pageSize,
+  });
 }
 
 export function listVouchers(page = 1, pageSize = 20) {
@@ -136,26 +145,38 @@ export function listVouchers(page = 1, pageSize = 20) {
 }
 
 export function listPaymentMethods(page = 1, pageSize = 20) {
-  return adminGet<PagedResponse<AdminPaymentMethod>>("/payment-methods", { page, pageSize });
+  return adminGet<PagedResponse<AdminPaymentMethod>>("/payment-methods", {
+    page,
+    pageSize,
+  });
 }
 
 export function listTcgCards(page = 1, pageSize = 20, q?: string) {
-  return adminGet<PagedResponse<AdminTcgCard>>("/tcg-cards", { page, pageSize, q });
+  return adminGet<PagedResponse<AdminTcgCard>>("/tcg-cards", {
+    page,
+    pageSize,
+    q,
+  });
 }
 
 export function listTcgSets(page = 1, pageSize = 20, q?: string) {
-  return adminGet<PagedResponse<AdminTcgSet>>("/tcg-sets", { page, pageSize, q });
+  return adminGet<PagedResponse<AdminTcgSet>>("/tcg-sets", {
+    page,
+    pageSize,
+    q,
+  });
 }
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
-  const [products, categories, vouchers, paymentMethods, tcgCards, tcgSets] = await Promise.all([
-    listProducts(1, 1),
-    listCategories(1, 1),
-    listVouchers(1, 1),
-    listPaymentMethods(1, 1),
-    listTcgCards(1, 1),
-    listTcgSets(1, 1),
-  ]);
+  const [products, categories, vouchers, paymentMethods, tcgCards, tcgSets] =
+    await Promise.all([
+      listProducts(1, 1),
+      listCategories(1, 1),
+      listVouchers(1, 1),
+      listPaymentMethods(1, 1),
+      listTcgCards(1, 1),
+      listTcgSets(1, 1),
+    ]);
 
   return {
     products: products.total,
@@ -250,7 +271,10 @@ export function getPaymentMethodById(id: number) {
   return adminGet<AdminPaymentMethodDetail>(`/payment-methods/${id}`);
 }
 
-export function updatePaymentMethod(id: number, payload: AdminPaymentMethodUpsert) {
+export function updatePaymentMethod(
+  id: number,
+  payload: AdminPaymentMethodUpsert,
+) {
   return adminRequest<AdminPaymentMethodDetail>(`/payment-methods/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
@@ -271,14 +295,19 @@ export function createTcgCard(payload: AdminTcgCardUpsert) {
 }
 
 export function getTcgCardById(cardId: string) {
-  return adminGet<AdminTcgCardDetail>(`/tcg-cards/${encodeURIComponent(cardId)}`);
+  return adminGet<AdminTcgCardDetail>(
+    `/tcg-cards/${encodeURIComponent(cardId)}`,
+  );
 }
 
 export function updateTcgCard(cardId: string, payload: AdminTcgCardUpsert) {
-  return adminRequest<AdminTcgCardDetail>(`/tcg-cards/${encodeURIComponent(cardId)}`, {
-    method: "PUT",
-    body: JSON.stringify(payload),
-  });
+  return adminRequest<AdminTcgCardDetail>(
+    `/tcg-cards/${encodeURIComponent(cardId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function deleteTcgCard(cardId: string) {
@@ -299,10 +328,13 @@ export function getTcgSetById(setId: string) {
 }
 
 export function updateTcgSet(setId: string, payload: AdminTcgSetUpsert) {
-  return adminRequest<AdminTcgSetDetail>(`/tcg-sets/${encodeURIComponent(setId)}`, {
-    method: "PUT",
-    body: JSON.stringify(payload),
-  });
+  return adminRequest<AdminTcgSetDetail>(
+    `/tcg-sets/${encodeURIComponent(setId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function deleteTcgSet(setId: string) {
@@ -311,8 +343,18 @@ export function deleteTcgSet(setId: string) {
   });
 }
 
-export function listOrders(page = 1, pageSize = 20, q?: string, status?: string) {
-  return adminGet<PagedResponse<AdminOrder>>("/orders/admin", { page, pageSize, q, status });
+export function listOrders(
+  page = 1,
+  pageSize = 20,
+  q?: string,
+  status?: string,
+) {
+  return adminGet<PagedResponse<AdminOrder>>("/orders/admin", {
+    page,
+    pageSize,
+    q,
+    status,
+  });
 }
 
 export function getOrderById(id: number) {
@@ -323,5 +365,91 @@ export function updateOrderStatus(id: number, status: string) {
   return adminRequest<AdminOrderDetail>(`/orders/admin/${id}/status`, {
     method: "PUT",
     body: JSON.stringify({ status }),
+  });
+}
+
+export interface RevenueStats {
+  startDate: string;
+  endDate: string;
+  totalRevenue: number;
+  totalOrders: number;
+  totalItems: number;
+  avgOrderValue: number;
+}
+
+export interface InventoryStatsItem {
+  productId: number;
+  sku: string | null;
+  productName: string | null;
+  quantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  isLowStock: boolean;
+}
+
+export interface InventoryStatsResponse {
+  lowStockThreshold: number;
+  items: InventoryStatsItem[];
+}
+
+export function getRevenueStats(startDate?: string, endDate?: string) {
+  return adminGet<RevenueStats>("/admin/statistics/revenue", {
+    startDate,
+    endDate,
+  });
+}
+
+export function getInventoryStats(
+  lowStockThreshold = 10,
+  onlyLowStock = false,
+) {
+  return adminGet<InventoryStatsResponse>("/admin/statistics/inventory", {
+    lowStockThreshold,
+    onlyLowStock,
+  });
+}
+
+// ============ Inventory Management APIs ============
+
+export interface AdminInventory {
+  id: number;
+  productId: number;
+  productName: string | null;
+  productSku: string | null;
+  quantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminInventoryUpdate {
+  quantity: number;
+  reservedQuantity: number;
+}
+
+export function listInventory(page = 1, pageSize = 20, q?: string) {
+  return adminGet<PagedResponse<AdminInventory>>("/inventory", {
+    page,
+    pageSize,
+    q,
+  });
+}
+
+export function getInventoryByProductId(productId: number) {
+  return adminGet<AdminInventory>(`/inventory/product/${productId}`);
+}
+
+export function updateInventory(id: number, payload: AdminInventoryUpdate) {
+  return adminRequest<AdminInventory>(`/inventory/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function adjustInventory(productId: number, adjustment: number) {
+  return adminRequest<{ message: string }>(`/inventory/product/${productId}/adjust`, {
+    method: "POST",
+    body: JSON.stringify({ adjustment }),
   });
 }
