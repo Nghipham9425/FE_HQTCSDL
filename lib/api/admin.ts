@@ -1,5 +1,5 @@
-import { API_ROOT } from "@/utils/constant"
-import { getAccessToken, refreshAccessToken } from "@/lib/api/auth"
+import { API_ROOT } from "@/utils/constant";
+import { getAccessToken, refreshAccessToken } from "@/lib/api/auth";
 import {
   type AdminCategory,
   type AdminCategoryDetail,
@@ -23,46 +23,46 @@ import {
   type AdminVoucherDetail,
   type AdminVoucherUpsert,
   type PagedResponse,
-} from "@/lib/types/admin"
+} from "@/lib/types/admin";
 
-type QueryValue = string | number | boolean | undefined | null
+type QueryValue = string | number | boolean | undefined | null;
 
-type QueryParams = Record<string, QueryValue>
+type QueryParams = Record<string, QueryValue>;
 
 function getAuthHeaders(): HeadersInit {
-  const token = getAccessToken()
-  if (!token) return {}
-  return { Authorization: `Bearer ${token}` }
+  const token = getAccessToken();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
 }
 
 async function refreshAndRetry<T>(
   executor: (headers: HeadersInit) => Promise<Response>,
 ): Promise<T> {
-  await refreshAccessToken()
-  const retry = await executor(getAuthHeaders())
+  await refreshAccessToken();
+  const retry = await executor(getAuthHeaders());
 
   if (!retry.ok) {
-    let message = `Admin API failed: ${retry.status}`
+    let message = `Admin API failed: ${retry.status}`;
     try {
-      const body = (await retry.json()) as { message?: string }
-      if (body.message) message = body.message
+      const body = (await retry.json()) as { message?: string };
+      if (body.message) message = body.message;
     } catch {
       // ignore parse errors and keep fallback message
     }
-    throw new Error(message)
+    throw new Error(message);
   }
 
-  if (retry.status === 204) return null as T
-  return (await retry.json()) as T
+  if (retry.status === 204) return null as T;
+  return (await retry.json()) as T;
 }
 
 async function adminGet<T>(path: string, params?: QueryParams): Promise<T> {
-  const url = new URL(`${API_ROOT}${path}`)
+  const url = new URL(`${API_ROOT}${path}`);
 
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null && value !== "") {
-        url.searchParams.set(key, String(value))
+        url.searchParams.set(key, String(value));
       }
     }
   }
@@ -76,19 +76,19 @@ async function adminGet<T>(path: string, params?: QueryParams): Promise<T> {
         ...extraHeaders,
       },
       cache: "no-store",
-    })
+    });
 
-  const response = await makeRequest(getAuthHeaders())
+  const response = await makeRequest(getAuthHeaders());
 
   if (response.status === 401 && typeof window !== "undefined") {
-    return refreshAndRetry(makeRequest)
+    return refreshAndRetry(makeRequest);
   }
 
   if (!response.ok) {
-    throw new Error(`Admin API failed: ${response.status}`)
+    throw new Error(`Admin API failed: ${response.status}`);
   }
 
-  return (await response.json()) as T
+  return (await response.json()) as T;
 }
 
 async function adminRequest<T>(path: string, init: RequestInit): Promise<T> {
@@ -102,27 +102,27 @@ async function adminRequest<T>(path: string, init: RequestInit): Promise<T> {
         ...extraHeaders,
         ...(init.headers ?? {}),
       },
-    })
+    });
 
-  const response = await makeRequest(getAuthHeaders())
+  const response = await makeRequest(getAuthHeaders());
 
   if (response.status === 401 && typeof window !== "undefined") {
-    return refreshAndRetry(makeRequest)
+    return refreshAndRetry(makeRequest);
   }
 
   if (!response.ok) {
-    let message = `Admin API failed: ${response.status}`
+    let message = `Admin API failed: ${response.status}`;
     try {
-      const body = (await response.json()) as { message?: string }
-      if (body.message) message = body.message
+      const body = (await response.json()) as { message?: string };
+      if (body.message) message = body.message;
     } catch {
       // ignore parse errors and keep fallback message
     }
-    throw new Error(message)
+    throw new Error(message);
   }
 
-  if (response.status === 204) return null as T
-  return (await response.json()) as T
+  if (response.status === 204) return null as T;
+  return (await response.json()) as T;
 }
 
 export function listProducts(page = 1, pageSize = 20, q?: string) {
@@ -130,25 +130,25 @@ export function listProducts(page = 1, pageSize = 20, q?: string) {
     page,
     pageSize,
     q,
-  })
+  });
 }
 
 export function listCategories(page = 1, pageSize = 20) {
   return adminGet<PagedResponse<AdminCategory>>("/categories", {
     page,
     pageSize,
-  })
+  });
 }
 
 export function listVouchers(page = 1, pageSize = 20) {
-  return adminGet<PagedResponse<AdminVoucher>>("/vouchers", { page, pageSize })
+  return adminGet<PagedResponse<AdminVoucher>>("/vouchers", { page, pageSize });
 }
 
 export function listPaymentMethods(page = 1, pageSize = 20) {
   return adminGet<PagedResponse<AdminPaymentMethod>>("/payment-methods", {
     page,
     pageSize,
-  })
+  });
 }
 
 export function listTcgCards(page = 1, pageSize = 20, q?: string) {
@@ -156,7 +156,7 @@ export function listTcgCards(page = 1, pageSize = 20, q?: string) {
     page,
     pageSize,
     q,
-  })
+  });
 }
 
 export function listTcgSets(page = 1, pageSize = 20, q?: string) {
@@ -164,7 +164,7 @@ export function listTcgSets(page = 1, pageSize = 20, q?: string) {
     page,
     pageSize,
     q,
-  })
+  });
 }
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
@@ -176,7 +176,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       listPaymentMethods(1, 1),
       listTcgCards(1, 1),
       listTcgSets(1, 1),
-    ])
+    ]);
 
   return {
     products: products.total,
@@ -185,90 +185,90 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     paymentMethods: paymentMethods.total,
     tcgCards: tcgCards.total,
     tcgSets: tcgSets.total,
-  }
+  };
 }
 
 export function createProduct(payload: AdminProductUpsert) {
   return adminRequest<AdminProductDetail>("/products", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function getProductById(id: number) {
-  return adminGet<AdminProductDetail>(`/products/${id}`)
+  return adminGet<AdminProductDetail>(`/products/${id}`);
 }
 
 export function updateProduct(id: number, payload: AdminProductUpsert) {
   return adminRequest<AdminProductDetail>(`/products/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function deleteProduct(id: number) {
   return adminRequest<null>(`/products/${id}`, {
     method: "DELETE",
-  })
+  });
 }
 
 export function createCategory(payload: AdminCategoryUpsert) {
   return adminRequest<AdminCategoryDetail>("/categories", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function getCategoryById(id: number) {
-  return adminGet<AdminCategoryDetail>(`/categories/${id}`)
+  return adminGet<AdminCategoryDetail>(`/categories/${id}`);
 }
 
 export function updateCategory(id: number, payload: AdminCategoryUpsert) {
   return adminRequest<AdminCategoryDetail>(`/categories/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function deleteCategory(id: number) {
   return adminRequest<null>(`/categories/${id}`, {
     method: "DELETE",
-  })
+  });
 }
 
 export function createVoucher(payload: AdminVoucherUpsert) {
   return adminRequest<AdminVoucherDetail>("/vouchers", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function getVoucherById(id: number) {
-  return adminGet<AdminVoucherDetail>(`/vouchers/${id}`)
+  return adminGet<AdminVoucherDetail>(`/vouchers/${id}`);
 }
 
 export function updateVoucher(id: number, payload: AdminVoucherUpsert) {
   return adminRequest<AdminVoucherDetail>(`/vouchers/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function deleteVoucher(id: number) {
   return adminRequest<null>(`/vouchers/${id}`, {
     method: "DELETE",
-  })
+  });
 }
 
 export function createPaymentMethod(payload: AdminPaymentMethodUpsert) {
   return adminRequest<AdminPaymentMethodDetail>("/payment-methods", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function getPaymentMethodById(id: number) {
-  return adminGet<AdminPaymentMethodDetail>(`/payment-methods/${id}`)
+  return adminGet<AdminPaymentMethodDetail>(`/payment-methods/${id}`);
 }
 
 export function updatePaymentMethod(
@@ -278,26 +278,26 @@ export function updatePaymentMethod(
   return adminRequest<AdminPaymentMethodDetail>(`/payment-methods/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function deletePaymentMethod(id: number) {
   return adminRequest<null>(`/payment-methods/${id}`, {
     method: "DELETE",
-  })
+  });
 }
 
 export function createTcgCard(payload: AdminTcgCardUpsert) {
   return adminRequest<AdminTcgCardDetail>("/tcg-cards", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function getTcgCardById(cardId: string) {
   return adminGet<AdminTcgCardDetail>(
     `/tcg-cards/${encodeURIComponent(cardId)}`,
-  )
+  );
 }
 
 export function updateTcgCard(cardId: string, payload: AdminTcgCardUpsert) {
@@ -307,24 +307,24 @@ export function updateTcgCard(cardId: string, payload: AdminTcgCardUpsert) {
       method: "PUT",
       body: JSON.stringify(payload),
     },
-  )
+  );
 }
 
 export function deleteTcgCard(cardId: string) {
   return adminRequest<null>(`/tcg-cards/${encodeURIComponent(cardId)}`, {
     method: "DELETE",
-  })
+  });
 }
 
 export function createTcgSet(payload: AdminTcgSetUpsert) {
   return adminRequest<AdminTcgSetDetail>("/tcg-sets", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
+  });
 }
 
 export function getTcgSetById(setId: string) {
-  return adminGet<AdminTcgSetDetail>(`/tcg-sets/${encodeURIComponent(setId)}`)
+  return adminGet<AdminTcgSetDetail>(`/tcg-sets/${encodeURIComponent(setId)}`);
 }
 
 export function updateTcgSet(setId: string, payload: AdminTcgSetUpsert) {
@@ -334,13 +334,13 @@ export function updateTcgSet(setId: string, payload: AdminTcgSetUpsert) {
       method: "PUT",
       body: JSON.stringify(payload),
     },
-  )
+  );
 }
 
 export function deleteTcgSet(setId: string) {
   return adminRequest<null>(`/tcg-sets/${encodeURIComponent(setId)}`, {
     method: "DELETE",
-  })
+  });
 }
 
 export function listOrders(
@@ -354,16 +354,102 @@ export function listOrders(
     pageSize,
     q,
     status,
-  })
+  });
 }
 
 export function getOrderById(id: number) {
-  return adminGet<AdminOrderDetail>(`/orders/admin/${id}`)
+  return adminGet<AdminOrderDetail>(`/orders/admin/${id}`);
 }
 
 export function updateOrderStatus(id: number, status: string) {
   return adminRequest<AdminOrderDetail>(`/orders/admin/${id}/status`, {
     method: "PUT",
     body: JSON.stringify({ status }),
-  })
+  });
+}
+
+export interface RevenueStats {
+  startDate: string;
+  endDate: string;
+  totalRevenue: number;
+  totalOrders: number;
+  totalItems: number;
+  avgOrderValue: number;
+}
+
+export interface InventoryStatsItem {
+  productId: number;
+  sku: string | null;
+  productName: string | null;
+  quantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  isLowStock: boolean;
+}
+
+export interface InventoryStatsResponse {
+  lowStockThreshold: number;
+  items: InventoryStatsItem[];
+}
+
+export function getRevenueStats(startDate?: string, endDate?: string) {
+  return adminGet<RevenueStats>("/admin/statistics/revenue", {
+    startDate,
+    endDate,
+  });
+}
+
+export function getInventoryStats(
+  lowStockThreshold = 10,
+  onlyLowStock = false,
+) {
+  return adminGet<InventoryStatsResponse>("/admin/statistics/inventory", {
+    lowStockThreshold,
+    onlyLowStock,
+  });
+}
+
+// ============ Inventory Management APIs ============
+
+export interface AdminInventory {
+  id: number;
+  productId: number;
+  productName: string | null;
+  productSku: string | null;
+  quantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminInventoryUpdate {
+  quantity: number;
+  reservedQuantity: number;
+}
+
+export function listInventory(page = 1, pageSize = 20, q?: string) {
+  return adminGet<PagedResponse<AdminInventory>>("/inventory", {
+    page,
+    pageSize,
+    q,
+  });
+}
+
+export function getInventoryByProductId(productId: number) {
+  return adminGet<AdminInventory>(`/inventory/product/${productId}`);
+}
+
+export function updateInventory(id: number, payload: AdminInventoryUpdate) {
+  return adminRequest<AdminInventory>(`/inventory/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function adjustInventory(productId: number, adjustment: number) {
+  return adminRequest<{ message: string }>(`/inventory/product/${productId}/adjust`, {
+    method: "POST",
+    body: JSON.stringify({ adjustment }),
+  });
 }

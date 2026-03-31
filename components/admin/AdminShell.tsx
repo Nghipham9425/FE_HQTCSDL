@@ -9,6 +9,7 @@ import {
   CreditCard,
   Gift,
   Package,
+  Warehouse,
   LayoutDashboard,
   Menu,
   Moon,
@@ -33,15 +34,16 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Boxes },
-  { href: "/admin/orders", label: "Orders", icon: Package },
-  { href: "/admin/categories", label: "Categories", icon: Shapes },
+  { href: "/admin/products", label: "Sản phẩm", icon: Boxes },
+  { href: "/admin/inventory", label: "Kho hàng", icon: Warehouse },
+  { href: "/admin/orders", label: "Đơn hàng", icon: Package },
+  { href: "/admin/categories", label: "Danh mục", icon: Shapes },
   { href: "/admin/tcg-cards", label: "TCG Cards", icon: Tag },
   { href: "/admin/tcg-sets", label: "TCG Sets", icon: Tag },
   { href: "/admin/vouchers", label: "Vouchers", icon: Gift },
   {
     href: "/admin/payment-methods",
-    label: "Payment Methods",
+    label: "Thanh toán",
     icon: CreditCard,
   },
 ]
