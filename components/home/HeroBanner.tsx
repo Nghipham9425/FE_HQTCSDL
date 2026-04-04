@@ -13,7 +13,7 @@ const slides = [
   {
     id: 2,
     image:
-      "https://tcg.pokemon.com/assets/img/share/en-us/ascended-heroes/share_fb.jpg",
+      "https://theme.hstatic.net/200000160361/1001347573/14/home_side_banner_2.jpg?v=770",
     alt: "Pokémon TCG - Mega Evolution",
   },
   {

@@ -45,12 +45,12 @@ const trends: Trend[] = [
 ]
 
 export default function SearchTrends() {
-  return (
-    <section className="bg-gray-50 py-10">
-      <div className="mx-auto max-w-screen-xl px-4">
-        <div className="flex flex-col items-center gap-8 md:flex-row md:gap-12">
-          {/* Label */}
-          <div className="flex flex-col items-center gap-3 md:w-36 md:shrink-0 md:items-start">
+    return (
+      <section className="bg-gray-50 py-10">
+        <div className="mx-auto max-w-screen-xl px-4">
+          <div className="flex flex-col items-center gap-8 md:flex-row md:gap-12">
+            {/* Label */}
+            <div className="flex flex-col items-center gap-3 md:w-36 md:shrink-0 md:items-start">
             <h2 className="text-base font-bold text-gray-800">
               Xu hướng tìm kiếm
             </h2>
