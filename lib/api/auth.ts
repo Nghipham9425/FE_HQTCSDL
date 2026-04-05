@@ -5,6 +5,10 @@ const USER_NAME_KEY = "auth_user_name"
 const USER_EMAIL_KEY = "auth_user_email"
 const USER_ROLE_KEY = "auth_user_role"
 
+const ROLE_ADMIN = "ADMIN"
+const ROLE_ORDER_MANAGER = "ORDER_MANAGER"
+const ROLE_INVENTORY_MANAGER = "INVENTORY_MANAGER"
+
 export type AuthUser = {
   id: number
   email: string
@@ -37,6 +41,12 @@ export type ProfileUpdatePayload = {
   country?: string | null
 }
 
+export type ChangePasswordPayload = {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null
   return localStorage.getItem(ACCESS_TOKEN_KEY)
@@ -48,7 +58,11 @@ export function getStoredRole(): string | null {
 }
 
 export function getPostLoginPath(role?: string | null): string {
-  return role?.toUpperCase() === "ADMIN" ? "/admin" : "/"
+  const normalized = role?.toUpperCase()
+  if (normalized === ROLE_ADMIN) return "/admin"
+  if (normalized === ROLE_ORDER_MANAGER) return "/admin/orders"
+  if (normalized === ROLE_INVENTORY_MANAGER) return "/admin/inventory"
+  return "/"
 }
 
 export function persistSession(result: AuthTokenResponse): void {
@@ -211,4 +225,11 @@ export async function updateMe(
   }
 
   return user
+}
+
+export async function changePassword(payload: ChangePasswordPayload): Promise<void> {
+  await authRequest<null>("/auth/change-password", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  })
 }

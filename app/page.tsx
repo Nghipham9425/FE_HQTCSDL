@@ -4,13 +4,12 @@ import SearchTrends from "@/components/home/SearchTrends"
 import NewArrivals from "@/components/home/NewArrivals"
 import CategoryBanners from "@/components/home/CategoryBanners"
 import SaleCarousel from "@/components/home/SaleCarousel"
-import BlogSection from "@/components/home/BlogSection"
+import WishlistPreview from "@/components/home/WishlistPreview"
 import {
   fetchBestSellers,
   fetchNewArrivals,
   fetchOnSale,
 } from "@/lib/api/products"
-import { blogPosts } from "@/data/mock/blogs"
 
 export default async function HomePage() {
   const [bestSellers, onSale, consoleNew, accessoryNew, tcgNew] =
@@ -35,10 +34,10 @@ export default async function HomePage() {
           "pokemon-tcg": tcgNew,
         }}
       />
+      <WishlistPreview />
       <div className="mx-auto max-w-screen-xl px-4">
         <SaleCarousel products={onSale} />
       </div>
-      <BlogSection posts={blogPosts} />
     </div>
   )
 }

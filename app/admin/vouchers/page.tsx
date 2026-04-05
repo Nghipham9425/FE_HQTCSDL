@@ -43,7 +43,9 @@ export default async function AdminVouchersPage({
         {
           header: "Discount",
           render: (row) =>
-            `${row.discountType} - ${formatCurrency(row.discountValue)}`,
+            row.discountType === "PERCENT"
+              ? `${row.discountValue}%`
+              : formatCurrency(row.discountValue),
         },
         { header: "Start", render: (row) => formatDate(row.startDate) },
         { header: "End", render: (row) => formatDate(row.endDate) },

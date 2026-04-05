@@ -1,9 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingBag, Zap, Shield, Package, RefreshCw, Truck, HeadphonesIcon, CheckCircle } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Zap, Shield, Package, RefreshCw, Truck, HeadphonesIcon, CheckCircle, Heart } from "lucide-react";
+import { toast } from "sonner";
 import { type ProductDetail } from "@/lib/api/products";
 import { useCartStore } from "@/lib/stores/cartStore";
+import { useWishlistStore } from "@/lib/stores/wishlistStore";
 
 interface ProductInfoProps {
   product: ProductDetail;
@@ -32,6 +34,11 @@ const commitments = [
 export default function ProductInfo({ product }: ProductInfoProps) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
+  const hydrateWishlist = useWishlistStore((s) => s.hydrate);
+  const toggleWishlist = useWishlistStore((s) => s.toggleItem);
+  const wished = useWishlistStore((s) =>
+    s.items.some((item) => String(item.id) === String(product.id)),
+  );
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const inStock = product.stock > 0;
@@ -59,6 +66,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       qty,
     );
 
+    toast.success(`Đã thêm ${qty} sản phẩm vào giỏ hàng`);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   }
@@ -81,8 +89,48 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       qty,
     );
 
+    toast.success("Đã thêm sản phẩm, chuyển đến thanh toán");
     router.push("/checkout");
   }
+
+  async function handleToggleWishlist() {
+    const wasWished = wished;
+    try {
+      await toggleWishlist({
+        id: product.id,
+        sku: product.sku,
+        name: product.name,
+        productType: product.productType,
+        price: product.price,
+        stock: product.stock,
+        isActive: product.isActive,
+        thumbnail: product.thumbnail,
+        updatedAt: product.updatedAt,
+      });
+      toast.success(
+        wasWished
+          ? "Đã xóa sản phẩm khỏi wishlist"
+          : "Đã thêm sản phẩm vào wishlist",
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      const isUnauthorized =
+        message === "Unauthorized" || message === "Session expired";
+
+      if (isUnauthorized) {
+        toast.error("Vui lòng đăng nhập để dùng wishlist");
+        const nextPath = `${window.location.pathname}${window.location.search}`;
+        window.location.href = `/auth/login?next=${encodeURIComponent(nextPath)}`;
+        return;
+      }
+
+      toast.error(message || "Không thể cập nhật wishlist");
+    }
+  }
+
+  useEffect(() => {
+    void hydrateWishlist();
+  }, [hydrateWishlist]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -98,7 +146,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
         <span>
           <span className="font-medium">Mã sản phẩm:</span>{" "}
-          <span className="text-[var(--brand-navy)]">{product.sku}</span>
+          <span className="text-(--brand-navy)">{product.sku}</span>
         </span>
         <span>
           <span className="font-medium">Tình trạng:</span>{" "}
@@ -108,7 +156,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         </span>
         <span>
           <span className="font-medium">Danh muc:</span>{" "}
-          <span className="text-[var(--brand-navy)]">{resolveCategoryLabel(product.productType)}</span>
+          <span className="text-(--brand-navy)">{resolveCategoryLabel(product.productType)}</span>
         </span>
       </div>
 
@@ -116,7 +164,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Pricing */}
       <div className="flex items-center gap-4">
-        <span className="text-3xl font-extrabold text-[var(--brand-red)]">
+        <span className="text-(--brand-red) text-3xl font-extrabold">
           {formatPrice(price)}
         </span>
         {originalPrice > price && (
@@ -124,7 +172,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             <span className="text-lg text-gray-400 line-through">
               {formatPrice(originalPrice)}
             </span>
-            <span className="rounded bg-[var(--brand-red)] px-2 py-0.5 text-sm font-bold text-white">
+            <span className="bg-(--brand-red) rounded px-2 py-0.5 text-sm font-bold text-white">
               -{discountPercent}%
             </span>
           </>
@@ -161,7 +209,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           <>
             <button
               onClick={handleBuyNow}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--brand-red)] py-3 text-base font-bold text-white hover:bg-[var(--brand-red-dark)] transition-colors"
+              className="bg-(--brand-red) hover:bg-(--brand-red-dark) flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-base font-bold text-white transition-colors"
             >
               MUA NGAY
             </button>
@@ -170,7 +218,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
               className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 py-3 text-base font-bold transition-colors ${
                 added
                   ? "border-emerald-600 bg-emerald-600 text-white"
-                  : "border-[var(--brand-red)] text-[var(--brand-red)] hover:bg-red-50"
+                  : "border-(--brand-red) text-(--brand-red) hover:bg-red-50"
               }`}
             >
               {added ? <CheckCircle size={18} /> : <ShoppingBag size={18} />}
@@ -187,11 +235,23 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         )}
       </div>
 
+      <button
+        onClick={handleToggleWishlist}
+        className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${
+          wished
+            ? "border-rose-300 bg-rose-50 text-rose-600"
+            : "border-gray-300 text-gray-700 hover:border-rose-300 hover:text-rose-600"
+        }`}
+      >
+        <Heart size={16} className={wished ? "fill-current" : ""} />
+        {wished ? "Đã có trong wishlist" : "Thêm vào wishlist"}
+      </button>
+
       {/* Commitments */}
       <div className="grid grid-cols-2 gap-2 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:grid-cols-3">
         {commitments.map(({ icon: Icon, label }) => (
           <div key={label} className="flex items-center gap-2 text-xs text-gray-600">
-            <Icon size={14} className="shrink-0 text-[var(--brand-navy)]" />
+            <Icon size={14} className="text-(--brand-navy) shrink-0" />
             {label}
           </div>
         ))}

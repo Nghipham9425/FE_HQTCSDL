@@ -30,42 +30,103 @@ type NavItem = {
   href: string
   label: string
   icon: React.ComponentType<{ className?: string }>
+  roles: string[]
 }
 
+const ROLE_ADMIN = "ADMIN"
+const ROLE_ORDER_MANAGER = "ORDER_MANAGER"
+const ROLE_INVENTORY_MANAGER = "INVENTORY_MANAGER"
+
 const navItems: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Sản phẩm", icon: Boxes },
-  { href: "/admin/inventory", label: "Kho hàng", icon: Warehouse },
-  { href: "/admin/orders", label: "Đơn hàng", icon: Package },
-  { href: "/admin/categories", label: "Danh mục", icon: Shapes },
-  { href: "/admin/tcg-cards", label: "TCG Cards", icon: Tag },
-  { href: "/admin/tcg-sets", label: "TCG Sets", icon: Tag },
-  { href: "/admin/vouchers", label: "Vouchers", icon: Gift },
+  {
+    href: "/admin",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    roles: [ROLE_ADMIN],
+  },
+  {
+    href: "/admin/products",
+    label: "Sản phẩm",
+    icon: Boxes,
+    roles: [ROLE_ADMIN, ROLE_INVENTORY_MANAGER],
+  },
+  {
+    href: "/admin/inventory",
+    label: "Kho hàng",
+    icon: Warehouse,
+    roles: [ROLE_ADMIN, ROLE_INVENTORY_MANAGER],
+  },
+  {
+    href: "/admin/orders",
+    label: "Đơn hàng",
+    icon: Package,
+    roles: [ROLE_ADMIN, ROLE_ORDER_MANAGER],
+  },
+  {
+    href: "/admin/categories",
+    label: "Danh mục",
+    icon: Shapes,
+    roles: [ROLE_ADMIN, ROLE_INVENTORY_MANAGER],
+  },
+  {
+    href: "/admin/tcg-cards",
+    label: "TCG Cards",
+    icon: Tag,
+    roles: [ROLE_ADMIN, ROLE_INVENTORY_MANAGER],
+  },
+  {
+    href: "/admin/tcg-sets",
+    label: "TCG Sets",
+    icon: Tag,
+    roles: [ROLE_ADMIN, ROLE_INVENTORY_MANAGER],
+  },
+  {
+    href: "/admin/vouchers",
+    label: "Vouchers",
+    icon: Gift,
+    roles: [ROLE_ADMIN],
+  },
   {
     href: "/admin/payment-methods",
     label: "Thanh toán",
     icon: CreditCard,
+    roles: [ROLE_ADMIN],
   },
 ]
+
+function getDefaultAdminPath(role: string): string {
+  if (role === ROLE_ADMIN) return "/admin"
+  if (role === ROLE_ORDER_MANAGER) return "/admin/orders"
+  if (role === ROLE_INVENTORY_MANAGER) return "/admin/inventory"
+  return "/"
+}
+
+function canAccessPath(role: string, path: string): boolean {
+  return navItems.some((item) => path.startsWith(item.href) && item.roles.includes(role))
+}
 
 export default function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [dark, setDark] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [userName, setUserName] = useState("Admin User")
-  const [userEmail, setUserEmail] = useState("admin@example.com")
-
-  useEffect(() => {
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return false
     const stored = localStorage.getItem("admin-theme")
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches
-    const isDark = stored ? stored === "dark" : prefersDark
-
-    setDark(isDark)
-    document.documentElement.classList.toggle("dark", isDark)
-  }, [])
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    return stored ? stored === "dark" : prefersDark
+  })
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [userName] = useState(() => {
+    if (typeof window === "undefined") return "Admin User"
+    return localStorage.getItem("auth_user_name") ?? "Admin User"
+  })
+  const [userEmail] = useState(() => {
+    if (typeof window === "undefined") return "admin@example.com"
+    return localStorage.getItem("auth_user_email") ?? "admin@example.com"
+  })
+  const [userRole] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null
+    return getStoredRole()?.toUpperCase() ?? null
+  })
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark)
@@ -73,29 +134,36 @@ export default function AdminShell({ children }: AdminShellProps) {
   }, [dark])
 
   useEffect(() => {
-    const storedName = localStorage.getItem("auth_user_name")
-    const storedEmail = localStorage.getItem("auth_user_email")
     const accessToken = localStorage.getItem("auth_access_token")
-    const role = getStoredRole()
+    const role = userRole
 
     if (!accessToken) {
       window.location.href = "/auth/login"
       return
     }
 
-    if (role?.toUpperCase() !== "ADMIN") {
+    if (!role || ![ROLE_ADMIN, ROLE_ORDER_MANAGER, ROLE_INVENTORY_MANAGER].includes(role)) {
       window.location.href = "/"
       return
     }
 
-    if (storedName) setUserName(storedName)
-    if (storedEmail) setUserEmail(storedEmail)
-  }, [])
+    if (!canAccessPath(role, pathname)) {
+      window.location.href = getDefaultAdminPath(role)
+      return
+    }
+  }, [pathname, userRole])
+
+  const filteredNavItems = useMemo(() => {
+    if (!userRole) return []
+    return navItems.filter((item) => item.roles.includes(userRole))
+  }, [userRole])
 
   const pageTitle = useMemo(() => {
-    const found = navItems.find((item) => item.href === pathname)
+    const found = filteredNavItems.find((item) => item.href === pathname)
     return found?.label ?? "Admin"
-  }, [pathname])
+  }, [pathname, filteredNavItems])
+
+  if (!userRole) return null
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -118,7 +186,7 @@ export default function AdminShell({ children }: AdminShellProps) {
           </div>
 
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const isActive = pathname === item.href
               const Icon = item.icon
               return (

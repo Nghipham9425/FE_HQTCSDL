@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Be_Vietnam_Pro } from "next/font/google"
 import "./globals.css"
 import RootFrame from "@/components/layout/RootFrame"
+import { Toaster } from "sonner"
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -24,9 +25,10 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className={`${beVietnamPro.variable} antialiased bg-[var(--brand-gray-bg)]`}
+        className={`${beVietnamPro.variable} bg-(--brand-gray-bg) antialiased`}
       >
         <RootFrame>{children}</RootFrame>
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   )

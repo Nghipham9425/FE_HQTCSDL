@@ -29,6 +29,11 @@ export default function AdminOrderDetailPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const canChooseCancelled = useMemo(() => {
+    const current = order?.orderStatus?.toUpperCase();
+    return current === "PENDING";
+  }, [order?.orderStatus]);
+
   useEffect(() => {
     if (!Number.isFinite(id) || id <= 0) {
       setError("Invalid order id");
@@ -137,7 +142,13 @@ export default function AdminOrderDetailPage() {
               className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
             >
               {statusOptions.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
+                <option
+                  key={opt}
+                  value={opt}
+                  disabled={opt === "CANCELLED" && !canChooseCancelled}
+                >
+                  {opt}
+                </option>
               ))}
             </select>
           </label>

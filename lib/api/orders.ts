@@ -84,3 +84,9 @@ export function getMyOrderDetail(id: number) {
     method: "GET",
   })
 }
+
+export function cancelMyOrder(id: number) {
+  return orderRequest<OrderDetail>(`/orders/me/${id}/cancel`, {
+    method: "POST",
+  })
+}

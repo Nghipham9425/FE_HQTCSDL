@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { getMyOrders } from "@/lib/api/orders"
+import { toast } from "sonner"
+import { cancelMyOrder, getMyOrders } from "@/lib/api/orders"
 import type { OrderListItem } from "@/lib/types/order"
 
 function formatPrice(value: number) {
@@ -35,6 +36,7 @@ function statusClass(status: string) {
 export default function AccountOrdersPage() {
   const [orders, setOrders] = useState<OrderListItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [cancellingId, setCancellingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -61,6 +63,36 @@ export default function AccountOrdersPage() {
       mounted = false
     }
   }, [])
+
+  async function onCancelOrder(orderId: number) {
+    const confirmed = window.confirm("Bạn có chắc muốn hủy đơn này không?")
+    if (!confirmed) return
+
+    setCancellingId(orderId)
+    setError(null)
+
+    try {
+      await cancelMyOrder(orderId)
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                orderStatus: "CANCELLED",
+              }
+            : o,
+        ),
+      )
+      toast.success("Hủy đơn hàng thành công")
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Không thể hủy đơn hàng."
+      setError(message)
+      toast.error(message)
+    } finally {
+      setCancellingId(null)
+    }
+  }
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10">
@@ -137,12 +169,24 @@ export default function AccountOrdersPage() {
               </div>
 
               <div className="md:col-span-2 md:text-right">
-                <Link
-                  href={`/account/orders/${order.id}`}
-                  className="inline-flex rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Xem chi tiết
-                </Link>
+                <div className="flex justify-start gap-2 md:justify-end">
+                  <Link
+                    href={`/account/orders/${order.id}`}
+                    className="inline-flex rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Xem chi tiết
+                  </Link>
+                  {order.orderStatus.toUpperCase() === "PENDING" ? (
+                    <button
+                      type="button"
+                      onClick={() => onCancelOrder(order.id)}
+                      disabled={cancellingId === order.id}
+                      className="inline-flex rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn"}
+                    </button>
+                  ) : null}
+                </div>
               </div>
             </div>
           ))}

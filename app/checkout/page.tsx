@@ -4,10 +4,15 @@ import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronRight, MapPin, Plus } from "lucide-react"
+import { toast } from "sonner"
 import { useCartStore } from "@/lib/stores/cartStore"
 import { placeOrder } from "@/lib/api/orders"
 import { getAccessToken } from "@/lib/api/auth"
 import { getAddresses, type UserAddress } from "@/lib/api/addresses"
+import {
+  previewVoucher,
+  type VoucherPreviewResponse,
+} from "@/lib/api/vouchers"
 
 function formatPrice(value: number) {
   return value.toLocaleString("vi-VN") + "đ"
@@ -36,10 +41,17 @@ export default function CheckoutPage() {
   const [orderEmail, setOrderEmail] = useState("")
   const [note, setNote] = useState("")
   const [voucherCode, setVoucherCode] = useState("")
+  const [voucherPreview, setVoucherPreview] =
+    useState<VoucherPreviewResponse | null>(null)
+  const [voucherFeedback, setVoucherFeedback] = useState<string | null>(null)
+  const [applyingVoucher, setApplyingVoucher] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const canCheckout = items.length > 0
+  const subTotal = totalPrice()
+  const discountAmount = voucherPreview?.discount ?? 0
+  const finalAmount = voucherPreview?.discountedAmount ?? subTotal
 
   useEffect(() => {
     async function loadAddresses() {
@@ -118,22 +130,30 @@ export default function CheckoutPage() {
     setError(null)
 
     if (!canCheckout) {
-      setError("Giỏ hàng đang trống.")
+      const message = "Giỏ hàng đang trống."
+      setError(message)
+      toast.error(message)
       return
     }
 
     if (!shippingAddress.trim()) {
-      setError("Vui lòng nhập địa chỉ nhận hàng.")
+      const message = "Vui lòng nhập địa chỉ nhận hàng."
+      setError(message)
+      toast.error(message)
       return
     }
 
     if (!phoneNumber.trim()) {
-      setError("Vui lòng nhập số điện thoại nhận hàng.")
+      const message = "Vui lòng nhập số điện thoại nhận hàng."
+      setError(message)
+      toast.error(message)
       return
     }
 
     if (lineItems.length === 0) {
-      setError("Không có sản phẩm hợp lệ để đặt hàng.")
+      const message = "Không có sản phẩm hợp lệ để đặt hàng."
+      setError(message)
+      toast.error(message)
       return
     }
 
@@ -164,9 +184,40 @@ export default function CheckoutPage() {
         router.push(`/auth/login?next=${encodeURIComponent("/checkout")}`)
         return
       }
-      setError(err instanceof Error ? err.message : "Đặt hàng thất bại.")
+      const message = err instanceof Error ? err.message : "Đặt hàng thất bại."
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function onApplyVoucher() {
+    const code = voucherCode.trim().toUpperCase()
+    if (!code) {
+      setVoucherPreview(null)
+      const message = "Vui lòng nhập mã voucher để áp dụng."
+      setVoucherFeedback(message)
+      toast.error(message)
+      return
+    }
+
+    setApplyingVoucher(true)
+    setVoucherFeedback(null)
+    try {
+      const preview = await previewVoucher(subTotal, code)
+      setVoucherCode(preview.voucherCode)
+      setVoucherPreview(preview)
+      setVoucherFeedback(`Đã áp dụng voucher ${preview.voucherCode}.`)
+      toast.success(`Đã áp dụng voucher ${preview.voucherCode}`)
+    } catch (err) {
+      setVoucherPreview(null)
+      const message =
+        err instanceof Error ? err.message : "Không thể áp dụng voucher."
+      setVoucherFeedback(message)
+      toast.error(message)
+    } finally {
+      setApplyingVoucher(false)
     }
   }
 
@@ -333,12 +384,35 @@ export default function CheckoutPage() {
 
             <label className="block text-sm">
               <div className="mb-1 font-medium">Mã voucher (tuỳ chọn)</div>
-              <input
-                value={voucherCode}
-                onChange={(e) => setVoucherCode(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-(--brand-navy) focus:outline-none focus:ring-2 focus:ring-(--brand-navy)/20"
-                placeholder="VD: SALE10"
-              />
+              <div className="flex gap-2">
+                <input
+                  value={voucherCode}
+                  onChange={(e) => {
+                    setVoucherCode(e.target.value.toUpperCase())
+                    setVoucherPreview(null)
+                    setVoucherFeedback(null)
+                  }}
+                  className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-(--brand-navy) focus:outline-none focus:ring-2 focus:ring-(--brand-navy)/20"
+                  placeholder="VD: SALE10"
+                />
+                <button
+                  type="button"
+                  onClick={onApplyVoucher}
+                  disabled={applyingVoucher || !voucherCode.trim()}
+                  className="rounded-xl border border-emerald-600 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {applyingVoucher ? "Đang kiểm tra..." : "Áp dụng"}
+                </button>
+              </div>
+              {voucherFeedback && (
+                <p
+                  className={`mt-1 text-xs ${
+                    voucherPreview ? "text-emerald-700" : "text-rose-600"
+                  }`}
+                >
+                  {voucherFeedback}
+                </p>
+              )}
             </label>
 
             <label className="block text-sm">
@@ -402,8 +476,14 @@ export default function CheckoutPage() {
               <hr className="my-3 border-gray-200" />
               <div className="flex justify-between">
                 <span>Tạm tính ({totalItems()} SP)</span>
-                <span className="font-medium">{formatPrice(totalPrice())}</span>
+                <span className="font-medium">{formatPrice(subTotal)}</span>
               </div>
+              {voucherPreview && (
+                <div className="flex justify-between text-emerald-700">
+                  <span>Giảm giá ({voucherPreview.voucherCode})</span>
+                  <span className="font-semibold">- {formatPrice(discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Vận chuyển</span>
                 <span className="font-medium text-green-600">Miễn phí</span>
@@ -411,7 +491,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-base font-extrabold text-gray-900">
                 <span>Tổng cộng</span>
                 <span className="text-(--brand-red)">
-                  {formatPrice(totalPrice())}
+                  {formatPrice(finalAmount)}
                 </span>
               </div>
             </div>

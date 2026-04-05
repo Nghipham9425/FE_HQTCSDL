@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { getAdminDashboardStats, getRevenueStats, getInventoryStats } from "@/lib/api/admin"
-import { Boxes, CreditCard, Gift, Shapes, Tag, Package, TrendingUp, ShoppingCart, AlertTriangle } from "lucide-react"
+import { Boxes, CreditCard, Gift, Shapes, Tag, TrendingUp, AlertTriangle } from "lucide-react"
+import AdminDashboardCharts from "@/components/admin/AdminDashboardCharts"
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -30,14 +31,6 @@ export default async function AdminDashboardPage() {
       icon: Shapes,
     },
     {
-      label: "Kho hàng",
-      value: inventoryStats?.items.length ?? 0,
-      href: "/admin/inventory",
-      icon: Package,
-      highlight: (inventoryStats?.items.length ?? 0) > 0,
-      subLabel: "sản phẩm sắp hết",
-    },
-    {
       label: "TCG Cards",
       value: stats.tcgCards,
       href: "/admin/tcg-cards",
@@ -65,7 +58,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-600 to-blue-500 p-6 text-white shadow-lg dark:border-indigo-800/60">
+      <section className="rounded-3xl border border-indigo-200 bg-linear-to-r from-indigo-600 to-blue-500 p-6 text-white shadow-lg dark:border-indigo-800/60">
         <h2 className="text-2xl font-black">HQTCSDL Admin Dashboard</h2>
         <p className="mt-2 text-sm text-indigo-100">
           Quản lý dữ liệu cửa hàng theo mô hình CRUD, đồng bộ trực tiếp với .NET
@@ -108,6 +101,12 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
       )}
+
+      <AdminDashboardCharts
+        stats={stats}
+        revenueStats={revenueStats}
+        inventoryStats={inventoryStats}
+      />
 
       {/* Low Stock Warning */}
       {inventoryStats && inventoryStats.items.length > 0 && (
@@ -152,17 +151,9 @@ export default async function AdminDashboardPage() {
             <Link
               key={card.label}
               href={card.href}
-              className={`group rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-                card.highlight
-                  ? "border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20"
-                  : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
-              }`}
+              className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
             >
-              <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${
-                card.highlight
-                  ? "bg-amber-200 text-amber-700 dark:bg-amber-700 dark:text-amber-200"
-                  : "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
-              }`}>
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
                 <Icon className="h-5 w-5" />
               </div>
               <p className="text-sm text-slate-500 dark:text-slate-300">
@@ -171,9 +162,6 @@ export default async function AdminDashboardPage() {
               <p className="mt-1 text-3xl font-black tracking-tight">
                 {card.value.toLocaleString("vi-VN")}
               </p>
-              {card.subLabel && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">{card.subLabel}</p>
-              )}
               <p className="mt-2 text-xs font-semibold text-indigo-600 group-hover:text-indigo-500 dark:text-indigo-300">
                 Quản lý →
               </p>

@@ -86,12 +86,7 @@ export default function LoginPage() {
                 >
                   Mật khẩu
                 </label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-xs text-[var(--brand-red)] hover:underline"
-                >
-                  Quên mật khẩu?
-                </Link>
+                <span className="text-xs text-gray-500">Đổi mật khẩu trong Tài khoản</span>
               </div>
               <div className="relative">
                 <input

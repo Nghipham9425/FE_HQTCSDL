@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { ShoppingBag, CheckCircle, Heart } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { type Product } from "@/lib/api/products";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/lib/stores/cartStore";
+import { useWishlistStore } from "@/lib/stores/wishlistStore";
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +20,11 @@ function formatPrice(price: number) {
 
 export default function ProductCard({ product, className }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
+  const hydrateWishlist = useWishlistStore((s) => s.hydrate);
+  const toggleWishlist = useWishlistStore((s) => s.toggleItem);
+  const wished = useWishlistStore((s) =>
+    s.items.some((item) => String(item.id) === String(product.id)),
+  );
   const [added, setAdded] = useState(false);
   const [imgSrc, setImgSrc] = useState(
     product.thumbnail || "https://picsum.photos/seed/cardgame-placeholder/400/500"
@@ -25,11 +32,42 @@ export default function ProductCard({ product, className }: ProductCardProps) {
   const inStock = product.stock > 0;
   const price = product.price ?? 0;
 
+  useEffect(() => {
+    void hydrateWishlist();
+  }, [hydrateWishlist]);
+
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
     addItem(product, 1);
+    toast.success(`Đã thêm ${product.name} vào giỏ hàng`);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
+  }
+
+  async function handleToggleWishlist(e: React.MouseEvent) {
+    e.preventDefault();
+    const wasWished = wished;
+    try {
+      await toggleWishlist(product);
+      toast.success(
+        wasWished
+          ? "Đã xóa sản phẩm khỏi wishlist"
+          : "Đã thêm sản phẩm vào wishlist",
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      const isUnauthorized =
+        message === "Unauthorized" || message === "Session expired";
+
+      if (isUnauthorized) {
+        toast.error("Vui lòng đăng nhập để dùng wishlist");
+        const nextPath = `${window.location.pathname}${window.location.search}`;
+        window.location.href = `/auth/login?next=${encodeURIComponent(nextPath)}`;
+        return;
+      }
+
+      toast.error(message || "Không thể cập nhật wishlist");
+    }
   }
 
   return (
@@ -50,10 +88,22 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       )}
 
       {/* Image */}
-      <div className="relative h-64 w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
+      <div className="relative h-64 w-full overflow-hidden bg-linear-to-b from-slate-50 to-slate-100">
         <div className="absolute left-2 top-2 z-10 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-slate-700 shadow-sm backdrop-blur">
           {product.sku}
         </div>
+        <button
+          onClick={handleToggleWishlist}
+          className={cn(
+            "absolute right-2 top-2 z-10 rounded-full border bg-white/90 p-1.5 backdrop-blur transition",
+            wished
+              ? "border-rose-300 text-rose-600"
+              : "border-slate-200 text-slate-500 hover:border-rose-300 hover:text-rose-500",
+          )}
+          aria-label={wished ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích"}
+        >
+          <Heart className={cn("h-4 w-4", wished && "fill-current")} />
+        </button>
         <Image
           src={imgSrc}
           alt={product.name}
@@ -76,7 +126,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
 
         {/* Prices */}
         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <span className="text-base font-bold text-[var(--brand-red)]">
+          <span className="text-(--brand-red) text-base font-bold">
             {formatPrice(price)}
           </span>
           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
@@ -92,7 +142,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
               "mt-2 flex items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold uppercase transition-all",
               added
                 ? "border-green-500 bg-green-500 text-white"
-                : "border-gray-200 text-gray-700 hover:bg-[var(--brand-red)] hover:text-white hover:border-[var(--brand-red)]"
+                : "border-gray-200 text-gray-700 hover:border-(--brand-red) hover:bg-(--brand-red) hover:text-white"
             )}
           >
             {added ? "Đã thêm!" : "Thêm vào giỏ"}

@@ -28,7 +28,6 @@ const accountMenuItems: AccountMenuItem[] = [
   { label: "Đơn hàng của tôi", href: "/account/orders" },
   { label: "Sổ địa chỉ", href: "/account/addresses" },
   { label: "Wishlist", href: "/account/wishlist" },
-  { label: "Voucher của tôi", href: "/account/vouchers" },
   { label: "Đổi mật khẩu", href: "/account/change-password" },
 ]
 
@@ -257,7 +256,6 @@ export default function Header() {
               { label: "Console", href: "/products?category=console" },
               { label: "Accessory", href: "/products?category=accessory" },
               { label: "Pokemon TCG", href: "/products?category=pokemon-tcg" },
-              { label: "Tin Tức", href: "/news" },
               { label: "Liên Hệ", href: "/contact" },
             ].map((item) => (
               <Link

@@ -24,7 +24,6 @@ const navItems = [
       { label: "Pokemon TCG", href: "/products?category=pokemon-tcg" },
     ],
   },
-  { label: "TIN TỨC", href: "/news" },
   { label: "HỖ TRỢ", href: "/support" },
   { label: "GIỚI THIỆU", href: "/about" },
   { label: "LIÊN HỆ", href: "/contact" },

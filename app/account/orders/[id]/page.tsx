@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { getMyOrderDetail } from "@/lib/api/orders"
+import { toast } from "sonner"
+import { cancelMyOrder, getMyOrderDetail } from "@/lib/api/orders"
 import type { OrderDetail } from "@/lib/types/order"
 
 function formatPrice(value: number) {
@@ -22,6 +23,7 @@ export default function AccountOrderDetailPage() {
 
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [cancelling, setCancelling] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -55,16 +57,49 @@ export default function AccountOrderDetailPage() {
     }
   }, [orderId])
 
+  async function onCancelOrder() {
+    if (!order) return
+    const confirmed = window.confirm("Bạn có chắc muốn hủy đơn này không?")
+    if (!confirmed) return
+
+    setCancelling(true)
+    setError(null)
+    try {
+      const updated = await cancelMyOrder(order.id)
+      setOrder(updated)
+      toast.success("Hủy đơn hàng thành công")
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Không thể hủy đơn hàng."
+      setError(message)
+      toast.error(message)
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold text-slate-900">Chi tiết đơn hàng</h1>
-        <Link
-          href="/account/orders"
-          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          Quay lại danh sách đơn
-        </Link>
+        <div className="flex items-center gap-2">
+          {order?.orderStatus?.toUpperCase() === "PENDING" ? (
+            <button
+              type="button"
+              onClick={onCancelOrder}
+              disabled={cancelling}
+              className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {cancelling ? "Đang hủy..." : "Hủy đơn"}
+            </button>
+          ) : null}
+          <Link
+            href="/account/orders"
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Quay lại danh sách đơn
+          </Link>
+        </div>
       </div>
 
       {loading ? (
