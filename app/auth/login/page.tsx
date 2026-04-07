@@ -86,7 +86,9 @@ export default function LoginPage() {
                 >
                   Mật khẩu
                 </label>
-                <span className="text-xs text-gray-500">Đổi mật khẩu trong Tài khoản</span>
+                <span className="text-xs text-gray-500">
+                  Đổi mật khẩu trong Tài khoản
+                </span>
               </div>
               <div className="relative">
                 <input

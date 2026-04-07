@@ -1,5 +1,9 @@
 import { API_ROOT } from "@/utils/constant"
-import { getAccessToken, refreshAccessToken, clearSession } from "@/lib/api/auth"
+import {
+  getAccessToken,
+  refreshAccessToken,
+  clearSession,
+} from "@/lib/api/auth"
 import { type Product } from "@/lib/api/products"
 
 type WishlistListResponse = {

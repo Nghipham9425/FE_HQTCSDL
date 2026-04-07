@@ -1,6 +1,10 @@
 import { create } from "zustand"
 import { type Product } from "@/lib/api/products"
-import { addWishlistItem, getWishlistItems, removeWishlistItem } from "@/lib/api/wishlist"
+import {
+  addWishlistItem,
+  getWishlistItems,
+  removeWishlistItem,
+} from "@/lib/api/wishlist"
 
 interface WishlistState {
   items: Product[]

@@ -10,6 +10,10 @@ import { placeOrder } from "@/lib/api/orders"
 import { getAccessToken } from "@/lib/api/auth"
 import { getAddresses, type UserAddress } from "@/lib/api/addresses"
 import {
+  listActivePaymentMethods,
+  type PaymentMethodItem,
+} from "@/lib/api/payment-methods"
+import {
   previewVoucher,
   type VoucherPreviewResponse,
 } from "@/lib/api/vouchers"
@@ -47,6 +51,10 @@ export default function CheckoutPage() {
   const [applyingVoucher, setApplyingVoucher] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodItem[]>([])
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true)
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] =
+    useState<number | null>(null)
 
   const canCheckout = items.length > 0
   const subTotal = totalPrice()
@@ -80,6 +88,31 @@ export default function CheckoutPage() {
     }
 
     loadAddresses()
+  }, [])
+
+  useEffect(() => {
+    async function loadPaymentMethods() {
+      try {
+        const methods = await listActivePaymentMethods()
+        setPaymentMethods(methods)
+
+        const cod = methods.find(
+          (m) => m.methodName.toUpperCase() === "COD",
+        )
+        setSelectedPaymentMethodId(cod?.id ?? methods[0]?.id ?? null)
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Không tải được phương thức thanh toán."
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoadingPaymentMethods(false)
+      }
+    }
+
+    void loadPaymentMethods()
   }, [])
 
   function applyAddress(address: UserAddress) {
@@ -125,6 +158,76 @@ export default function CheckoutPage() {
     [items],
   )
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const raw = window.sessionStorage.getItem("sepay_pending_order")
+    if (!raw) return
+
+    try {
+      const pending = JSON.parse(raw) as {
+        orderId: number
+        amount: number
+      }
+
+      if (
+        Number.isFinite(pending.orderId) &&
+        pending.orderId > 0 &&
+        Number.isFinite(pending.amount) &&
+        pending.amount > 0
+      ) {
+        window.sessionStorage.removeItem("sepay_pending_order")
+        router.replace(
+          `/checkout/success?orderId=${pending.orderId}&payment=sepay&amount=${pending.amount}&status=cancel`,
+        )
+      }
+    } catch {
+      window.sessionStorage.removeItem("sepay_pending_order")
+    }
+  }, [router])
+
+  async function redirectToSePayGateway(orderId: number, amount: number) {
+    const response = await fetch("/api/sepay/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ orderId, amount }),
+    })
+
+    if (!response.ok) {
+      let message = "Không thể khởi tạo cổng thanh toán SePay"
+      try {
+        const body = (await response.json()) as { message?: string }
+        if (body.message) message = body.message
+      } catch {
+        // keep fallback message
+      }
+      throw new Error(message)
+    }
+
+    const data = (await response.json()) as {
+      checkoutUrl: string
+      fields: Record<string, string | number>
+    }
+
+    const form = document.createElement("form")
+    form.method = "POST"
+    form.action = data.checkoutUrl
+
+    Object.entries(data.fields).forEach(([name, value]) => {
+      const input = document.createElement("input")
+      input.type = "hidden"
+      input.name = name
+      input.value = String(value)
+      form.appendChild(input)
+    })
+
+    document.body.appendChild(form)
+    form.submit()
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
@@ -157,6 +260,13 @@ export default function CheckoutPage() {
       return
     }
 
+    if (!selectedPaymentMethodId) {
+      const message = "Vui lòng chọn phương thức thanh toán."
+      setError(message)
+      toast.error(message)
+      return
+    }
+
     if (!getAccessToken()) {
       router.push(`/auth/login?next=${encodeURIComponent("/checkout")}`)
       return
@@ -171,13 +281,33 @@ export default function CheckoutPage() {
         orderEmail: orderEmail.trim() || undefined,
         note: note.trim() || undefined,
         voucherCode: voucherCode.trim() || undefined,
+        paymentMethodId: selectedPaymentMethodId,
         items: lineItems.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
         })),
       })
 
+      const isSePay =
+        (order.paymentMethodName ?? "").trim().toUpperCase() === "SEPAY"
+
       clearCart()
+      if (isSePay) {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(
+            "sepay_pending_order",
+            JSON.stringify({
+              orderId: order.id,
+              amount: order.finalAmount,
+            }),
+          )
+        }
+
+        toast.success("Đang chuyển sang cổng thanh toán SePay...")
+        await redirectToSePayGateway(order.id, order.finalAmount)
+        return
+      }
+
       router.push(`/checkout/success?orderId=${order.id}`)
     } catch (err) {
       if (isUnauthorizedError(err)) {
@@ -427,8 +557,43 @@ export default function CheckoutPage() {
               />
             </label>
 
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              Phương thức thanh toán hiện tại: COD (Thanh toán khi nhận hàng).
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+              <p className="mb-2 text-sm font-semibold text-slate-800">
+                Phương thức thanh toán
+              </p>
+              {loadingPaymentMethods ? (
+                <p className="text-sm text-slate-600">Đang tải phương thức thanh toán...</p>
+              ) : paymentMethods.length === 0 ? (
+                <p className="text-sm text-rose-700">Không có phương thức thanh toán khả dụng.</p>
+              ) : (
+                <div className="space-y-2">
+                  {paymentMethods.map((method) => {
+                    const key = method.methodName.toUpperCase()
+                    const helper =
+                      key === "SEPAY"
+                        ? "Thanh toán qua cổng SePay (sandbox/production)"
+                        : "Thanh toán khi nhận hàng"
+
+                    return (
+                      <label
+                        key={method.id}
+                        className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          checked={selectedPaymentMethodId === method.id}
+                          onChange={() => setSelectedPaymentMethodId(method.id)}
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{method.methodName}</p>
+                          <p className="text-xs text-slate-500">{helper}</p>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {error ? (

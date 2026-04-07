@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useLayoutEffect, useMemo, useState } from "react"
 import {
   Bell,
   Boxes,
@@ -102,16 +102,21 @@ function getDefaultAdminPath(role: string): string {
 }
 
 function canAccessPath(role: string, path: string): boolean {
-  return navItems.some((item) => path.startsWith(item.href) && item.roles.includes(role))
+  return navItems.some(
+    (item) => path.startsWith(item.href) && item.roles.includes(role),
+  )
 }
 
 export default function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(() => {
     if (typeof window === "undefined") return false
     const stored = localStorage.getItem("admin-theme")
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches
     return stored ? stored === "dark" : prefersDark
   })
   const [menuOpen, setMenuOpen] = useState(false)
@@ -128,30 +133,38 @@ export default function AdminShell({ children }: AdminShellProps) {
     return getStoredRole()?.toUpperCase() ?? null
   })
 
+  const accessToken =
+    typeof window === "undefined"
+      ? null
+      : localStorage.getItem("auth_access_token")
+  const isAllowedRole = Boolean(
+    userRole &&
+    [ROLE_ADMIN, ROLE_ORDER_MANAGER, ROLE_INVENTORY_MANAGER].includes(userRole),
+  )
+  const isAllowedPath = Boolean(userRole && canAccessPath(userRole, pathname))
+  const canRenderAdmin = Boolean(accessToken && isAllowedRole && isAllowedPath)
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark)
     localStorage.setItem("admin-theme", dark ? "dark" : "light")
   }, [dark])
 
-  useEffect(() => {
-    const accessToken = localStorage.getItem("auth_access_token")
-    const role = userRole
-
+  useLayoutEffect(() => {
     if (!accessToken) {
-      window.location.href = "/auth/login"
+      router.replace("/auth/login")
       return
     }
 
-    if (!role || ![ROLE_ADMIN, ROLE_ORDER_MANAGER, ROLE_INVENTORY_MANAGER].includes(role)) {
-      window.location.href = "/"
+    if (!isAllowedRole) {
+      router.replace("/")
       return
     }
 
-    if (!canAccessPath(role, pathname)) {
-      window.location.href = getDefaultAdminPath(role)
+    if (!isAllowedPath && userRole) {
+      router.replace(getDefaultAdminPath(userRole))
       return
     }
-  }, [pathname, userRole])
+  }, [accessToken, isAllowedPath, isAllowedRole, router, userRole])
 
   const filteredNavItems = useMemo(() => {
     if (!userRole) return []
@@ -163,7 +176,7 @@ export default function AdminShell({ children }: AdminShellProps) {
     return found?.label ?? "Admin"
   }, [pathname, filteredNavItems])
 
-  if (!userRole) return null
+  if (!canRenderAdmin) return null
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">

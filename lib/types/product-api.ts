@@ -16,6 +16,8 @@ export type ApiProductListItem = {
   productType: string
   price: number | null
   stock: number
+  reservedStock?: number
+  availableStock?: number
   isActive: boolean
   thumbnail: string | null
   updatedAt: string
@@ -32,6 +34,8 @@ export type ApiProductDetail = {
   thumbnail: string | null
   image: string | null
   stock: number
+  reservedStock?: number
+  availableStock?: number
   isActive: boolean
   updatedAt: string
 }

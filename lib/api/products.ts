@@ -10,6 +10,34 @@ import {
 export type Product = ApiProductListItem
 export type ProductDetail = ApiProductDetail
 
+type ProductStockLike = {
+  isActive: boolean
+  stock: number
+  reservedStock?: number
+  availableStock?: number
+}
+
+function resolveAvailableStock(product: ProductStockLike) {
+  if (typeof product.availableStock === "number") return product.availableStock
+  if (typeof product.reservedStock === "number") {
+    return Math.max(0, product.stock - product.reservedStock)
+  }
+  return product.stock
+}
+
+function toDisplayableStock<T extends ProductStockLike>(product: T): T {
+  const availableStock = resolveAvailableStock(product)
+  return {
+    ...product,
+    availableStock,
+    stock: availableStock,
+  }
+}
+
+function isDisplayableProduct(product: ProductStockLike) {
+  return product.isActive && resolveAvailableStock(product) > 0
+}
+
 const apiClient = axios.create({
   baseURL: API_ROOT,
   timeout: 10000,
@@ -70,6 +98,8 @@ async function fetchAllProductsFromApi(filters?: ProductQueryFilters) {
     }
 
     return Array.from(uniqueById.values())
+      .map(toDisplayableStock)
+      .filter(isDisplayableProduct)
   } catch {
     return []
   }
@@ -91,7 +121,7 @@ export async function fetchRecentProducts(limit = 10) {
       isActive: true,
     })
 
-    return data.items
+    return data.items.map(toDisplayableStock).filter(isDisplayableProduct)
   } catch {
     return []
   }
@@ -100,7 +130,8 @@ export async function fetchRecentProducts(limit = 10) {
 export async function fetchProductById(id: number) {
   try {
     const product = await apiGet<ApiProductDetail>(`/products/${id}`)
-    return product.isActive ? product : null
+    const displayable = toDisplayableStock(product)
+    return isDisplayableProduct(displayable) ? displayable : null
   } catch {
     return null
   }

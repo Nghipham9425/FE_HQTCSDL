@@ -41,7 +41,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
   );
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const inStock = product.stock > 0;
+  const availableStock =
+    typeof product.availableStock === "number"
+      ? product.availableStock
+      : product.stock;
+  const inStock = availableStock > 0;
   const price = product.price ?? 0;
   const originalPrice = product.originalPrice ?? price;
   const discountPercent = originalPrice > price && originalPrice > 0
@@ -58,7 +62,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         name: product.name,
         productType: product.productType,
         price: product.price,
-        stock: product.stock,
+          stock: availableStock,
         isActive: product.isActive,
         thumbnail: product.thumbnail,
         updatedAt: product.updatedAt,
@@ -81,7 +85,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         name: product.name,
         productType: product.productType,
         price: product.price,
-        stock: product.stock,
+          stock: availableStock,
         isActive: product.isActive,
         thumbnail: product.thumbnail,
         updatedAt: product.updatedAt,
@@ -102,7 +106,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         name: product.name,
         productType: product.productType,
         price: product.price,
-        stock: product.stock,
+        stock: availableStock,
         isActive: product.isActive,
         thumbnail: product.thumbnail,
         updatedAt: product.updatedAt,
@@ -194,7 +198,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             </button>
             <span className="w-10 text-center text-sm font-semibold">{qty}</span>
             <button
-              onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
+              onClick={() => setQty((q) => Math.min(availableStock, q + 1))}
               className="flex h-9 w-9 items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <Plus size={14} />

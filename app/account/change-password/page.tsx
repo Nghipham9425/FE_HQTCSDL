@@ -54,7 +54,8 @@ export default function AccountChangePasswordPage() {
       toast.success("Đổi mật khẩu thành công. Vui lòng đăng nhập lại.")
       router.replace("/auth/login")
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Không thể đổi mật khẩu."
+      const message =
+        err instanceof Error ? err.message : "Không thể đổi mật khẩu."
       setError(message)
       toast.error(message)
     } finally {
@@ -67,7 +68,8 @@ export default function AccountChangePasswordPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-900">Đổi mật khẩu</h1>
         <p className="mt-2 text-slate-600">
-          Mật khẩu mới cần tối thiểu 8 ký tự. Sau khi đổi thành công, bạn sẽ cần đăng nhập lại.
+          Mật khẩu mới cần tối thiểu 8 ký tự. Sau khi đổi thành công, bạn sẽ cần
+          đăng nhập lại.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 grid gap-4 md:grid-cols-2">

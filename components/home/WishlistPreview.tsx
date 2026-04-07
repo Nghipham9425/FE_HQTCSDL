@@ -18,8 +18,12 @@ export default function WishlistPreview() {
     <section className="mx-auto mt-8 max-w-7xl px-4">
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Sản phẩm yêu thích</h2>
-          <p className="text-sm text-slate-500">Danh sách bạn đã bấm tim trên trang chủ</p>
+          <h2 className="text-xl font-black text-slate-900">
+            Sản phẩm yêu thích
+          </h2>
+          <p className="text-sm text-slate-500">
+            Danh sách bạn đã bấm tim trên trang chủ
+          </p>
         </div>
       </div>
 

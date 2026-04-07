@@ -70,7 +70,10 @@ export default function AdminDashboardCharts({
     },
     {
       name: "Ổn định",
-      value: Math.max((stats.products ?? 0) - (inventoryStats?.items.length ?? 0), 0),
+      value: Math.max(
+        (stats.products ?? 0) - (inventoryStats?.items.length ?? 0),
+        0,
+      ),
       color: "#22c55e",
     },
   ]
@@ -85,7 +88,11 @@ export default function AdminDashboardCharts({
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis allowDecimals={false} />
-              <Tooltip formatter={(value) => toSafeNumber(value).toLocaleString("vi-VN")} />
+              <Tooltip
+                formatter={(value) =>
+                  toSafeNumber(value).toLocaleString("vi-VN")
+                }
+              />
               <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -110,7 +117,11 @@ export default function AdminDashboardCharts({
                   <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => toSafeNumber(value).toLocaleString("vi-VN")} />
+              <Tooltip
+                formatter={(value) =>
+                  toSafeNumber(value).toLocaleString("vi-VN")
+                }
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -125,7 +136,9 @@ export default function AdminDashboardCharts({
               <BarChart data={revenueData} margin={{ left: 8, right: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-                <YAxis tickFormatter={(value) => value.toLocaleString("vi-VN")} />
+                <YAxis
+                  tickFormatter={(value) => value.toLocaleString("vi-VN")}
+                />
                 <Tooltip
                   formatter={(value, _name, item) => {
                     const numericValue = toSafeNumber(value)

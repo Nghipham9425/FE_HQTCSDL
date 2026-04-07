@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps) {
 
   if (!product) return { title: "Sản phẩm không tồn tại" }
   return {
-    title: `${product.name} – Bánh Mì Games`,
+    title: `${product.name} – Cardgame Center`,
     description: product.descriptions ?? undefined,
   }
 }

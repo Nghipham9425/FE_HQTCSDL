@@ -11,6 +11,7 @@ export default function AccountWishlistPage() {
   const hydrateWishlist = useWishlistStore((s) => s.hydrate)
   const toggleWishlist = useWishlistStore((s) => s.toggleItem)
   const [error, setError] = useState<string | null>(null)
+  const visibleItems = items.filter((item) => item.stock > 0)
 
   useEffect(() => {
     ;(async () => {
@@ -44,20 +45,20 @@ export default function AccountWishlistPage() {
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {error}
         </div>
-      ) : items.length === 0 ? (
+      ) : visibleItems.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
-          Bạn chưa có sản phẩm yêu thích nào.
+          Chưa có sản phẩm còn hàng trong wishlist của bạn.
         </div>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {items.map((product) => (
+            {visibleItems.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            {items.map((product) => (
+            {visibleItems.map((product) => (
               <button
                 key={`remove-${product.id}`}
                 onClick={async () => {

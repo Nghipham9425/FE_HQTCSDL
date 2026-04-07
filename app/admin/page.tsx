@@ -1,6 +1,18 @@
 import Link from "next/link"
-import { getAdminDashboardStats, getRevenueStats, getInventoryStats } from "@/lib/api/admin"
-import { Boxes, CreditCard, Gift, Shapes, Tag, TrendingUp, AlertTriangle } from "lucide-react"
+import {
+  getAdminDashboardStats,
+  getRevenueStats,
+  getInventoryStats,
+} from "@/lib/api/admin"
+import {
+  Boxes,
+  CreditCard,
+  Gift,
+  Shapes,
+  Tag,
+  TrendingUp,
+  AlertTriangle,
+} from "lucide-react"
 import AdminDashboardCharts from "@/components/admin/AdminDashboardCharts"
 
 function formatCurrency(value: number) {
@@ -75,25 +87,33 @@ export default async function AdminDashboardPage() {
           </h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
-              <p className="text-sm text-green-700 dark:text-green-300">Tổng doanh thu</p>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Tổng doanh thu
+              </p>
               <p className="mt-1 text-2xl font-bold text-green-800 dark:text-green-200">
                 {formatCurrency(revenueStats.totalRevenue)}
               </p>
             </div>
             <div className="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
-              <p className="text-sm text-blue-700 dark:text-blue-300">Tổng đơn hàng</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Tổng đơn hàng
+              </p>
               <p className="mt-1 text-2xl font-bold text-blue-800 dark:text-blue-200">
                 {revenueStats.totalOrders.toLocaleString("vi-VN")}
               </p>
             </div>
             <div className="rounded-xl bg-purple-50 p-4 dark:bg-purple-900/20">
-              <p className="text-sm text-purple-700 dark:text-purple-300">Tổng SP bán ra</p>
+              <p className="text-sm text-purple-700 dark:text-purple-300">
+                Tổng SP bán ra
+              </p>
               <p className="mt-1 text-2xl font-bold text-purple-800 dark:text-purple-200">
                 {revenueStats.totalItems.toLocaleString("vi-VN")}
               </p>
             </div>
             <div className="rounded-xl bg-orange-50 p-4 dark:bg-orange-900/20">
-              <p className="text-sm text-orange-700 dark:text-orange-300">TB/đơn hàng</p>
+              <p className="text-sm text-orange-700 dark:text-orange-300">
+                TB/đơn hàng
+              </p>
               <p className="mt-1 text-2xl font-bold text-orange-800 dark:text-orange-200">
                 {formatCurrency(revenueStats.avgOrderValue)}
               </p>
@@ -126,10 +146,15 @@ export default async function AdminDashboardPage() {
               </thead>
               <tbody className="text-amber-900 dark:text-amber-100">
                 {inventoryStats.items.slice(0, 5).map((item) => (
-                  <tr key={item.productId} className="border-t border-amber-200 dark:border-amber-700">
+                  <tr
+                    key={item.productId}
+                    className="border-t border-amber-200 dark:border-amber-700"
+                  >
                     <td className="py-2 font-mono text-xs">{item.sku}</td>
                     <td className="py-2">{item.productName}</td>
-                    <td className="py-2 text-right font-bold">{item.availableQuantity}</td>
+                    <td className="py-2 text-right font-bold">
+                      {item.availableQuantity}
+                    </td>
                   </tr>
                 ))}
               </tbody>
