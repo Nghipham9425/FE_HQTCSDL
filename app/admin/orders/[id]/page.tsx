@@ -7,6 +7,20 @@ import { getOrderById, updateOrderStatus } from "@/lib/api/admin";
 import type { AdminOrderDetail } from "@/lib/types/admin";
 
 const statusOptions = ["PENDING", "CONFIRMED", "SHIPPED", "DONE", "CANCELLED"] as const;
+type OrderStatus = (typeof statusOptions)[number];
+
+const statusTransitionMap: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["PENDING", "CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["CONFIRMED", "SHIPPED"],
+  SHIPPED: ["SHIPPED", "DONE"],
+  DONE: ["DONE"],
+  CANCELLED: ["CANCELLED"],
+};
+
+function normalizeStatus(value: string): OrderStatus | null {
+  const upper = value.trim().toUpperCase();
+  return statusOptions.includes(upper as OrderStatus) ? (upper as OrderStatus) : null;
+}
 
 function formatPrice(value: number) {
   return value.toLocaleString("vi-VN") + "đ";
@@ -29,10 +43,12 @@ export default function AdminOrderDetailPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canChooseCancelled = useMemo(() => {
-    const current = order?.orderStatus?.toUpperCase();
-    return current === "PENDING";
-  }, [order?.orderStatus]);
+  const currentStatus = useMemo(() => normalizeStatus(order?.orderStatus ?? ""), [order?.orderStatus]);
+
+  const allowedStatuses = useMemo<OrderStatus[]>(() => {
+    if (!currentStatus) return statusOptions;
+    return statusTransitionMap[currentStatus];
+  }, [currentStatus]);
 
   useEffect(() => {
     if (!Number.isFinite(id) || id <= 0) {
@@ -55,11 +71,22 @@ export default function AdminOrderDetailPage() {
   async function onSaveStatus() {
     if (!order) return;
 
+    const nextStatus = normalizeStatus(status);
+    if (!nextStatus) {
+      setError("Trạng thái không hợp lệ");
+      return;
+    }
+
+    if (currentStatus && !statusTransitionMap[currentStatus].includes(nextStatus)) {
+      setError(`Không thể chuyển từ ${currentStatus} sang ${nextStatus}`);
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
     try {
-      const updated = await updateOrderStatus(order.id, status);
+      const updated = await updateOrderStatus(order.id, nextStatus);
       setOrder(updated);
       setStatus(updated.orderStatus);
       router.refresh();
@@ -145,7 +172,7 @@ export default function AdminOrderDetailPage() {
                 <option
                   key={opt}
                   value={opt}
-                  disabled={opt === "CANCELLED" && !canChooseCancelled}
+                  disabled={!allowedStatuses.includes(opt)}
                 >
                   {opt}
                 </option>
