@@ -1,5 +1,4 @@
-import axios from "axios"
-import { API_ROOT } from "@/utils/constant"
+import { apiClient } from "@/lib/api/client"
 import {
   type ApiProductDetail,
   type ApiProductListItem,
@@ -37,12 +36,6 @@ function toDisplayableStock<T extends ProductStockLike>(product: T): T {
 function isDisplayableProduct(product: ProductStockLike) {
   return product.isActive && resolveAvailableStock(product) > 0
 }
-
-const apiClient = axios.create({
-  baseURL: API_ROOT,
-  timeout: 10000,
-  withCredentials: true,
-})
 
 type QueryValue = string | number | boolean | undefined
 type QueryParams = Record<string, QueryValue>
