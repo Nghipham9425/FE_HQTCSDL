@@ -1,13 +1,19 @@
 import type { Metadata } from "next"
-import { Be_Vietnam_Pro } from "next/font/google"
+import { Be_Vietnam_Pro, Manrope } from "next/font/google"
 import "./globals.css"
 import RootFrame from "@/components/layout/RootFrame"
 import { Toaster } from "sonner"
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-sans",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-heading",
+  display: "swap",
+})
+
+const manrope = Manrope({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-body",
   display: "swap",
 })
 
@@ -25,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className={`${beVietnamPro.variable} bg-(--brand-gray-bg) antialiased`}
+        className={`${manrope.variable} ${beVietnamPro.variable} bg-(--brand-gray-bg) antialiased`}
       >
         <RootFrame>{children}</RootFrame>
         <Toaster position="bottom-right" richColors closeButton />
