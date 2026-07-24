@@ -1,6 +1,7 @@
 import HeroBanner from "@/components/home/HeroBanner"
 import BestSellersCarousel from "@/components/home/BestSellersCarousel"
 import SearchTrends from "@/components/home/SearchTrends"
+import DiscoverySpotlight from "@/components/home/DiscoverySpotlight"
 import NewArrivals from "@/components/home/NewArrivals"
 import CategoryBanners from "@/components/home/CategoryBanners"
 import SaleCarousel from "@/components/home/SaleCarousel"
@@ -22,11 +23,11 @@ export default async function HomePage() {
     ])
 
   return (
-    <div className="pb-10">
+    <main className="overflow-hidden bg-[#f7f8fb] pb-16">
       <HeroBanner />
       <CategoryBanners />
       <BestSellersCarousel products={bestSellers} />
-      <SearchTrends />
+      <DiscoverySpotlight />
       <NewArrivals
         productsByCategory={{
           console: consoleNew,
@@ -35,9 +36,10 @@ export default async function HomePage() {
         }}
       />
       <WishlistPreview />
-      <div className="mx-auto max-w-screen-xl px-4">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SaleCarousel products={onSale} />
       </div>
-    </div>
+      <SearchTrends />
+    </main>
   )
 }

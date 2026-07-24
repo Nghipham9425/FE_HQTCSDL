@@ -24,7 +24,7 @@ export default function NewArrivals({ productsByCategory }: NewArrivalsProps) {
   const products = productsByCategory[activeTab] ?? []
 
   return (
-    <section className="mx-auto max-w-screen-xl px-4 py-10">
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
       {/* Header with tabs */}
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SectionHeader title="Hàng mới về" />

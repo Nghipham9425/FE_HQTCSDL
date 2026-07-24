@@ -21,13 +21,13 @@ export default function BestSellersCarousel({
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
 
   return (
-    <section className="mx-auto max-w-screen-xl px-4 py-8">
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <SectionHeader
-        title="Top sản phẩm bán chạy"
+        title="Sản phẩm bán chạy"
         href="/products?bestSeller=true"
         onPrev={scrollPrev}
         onNext={scrollNext}
-        className="mb-4"
+        className="mb-6"
       />
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-4">

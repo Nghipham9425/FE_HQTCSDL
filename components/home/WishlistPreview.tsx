@@ -15,7 +15,7 @@ export default function WishlistPreview() {
   if (items.length === 0) return null
 
   return (
-    <section className="mx-auto mt-8 max-w-7xl px-4">
+    <section className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mb-4 flex items-end justify-between">
         <div>
           <h2 className="text-xl font-black text-slate-900">

@@ -17,7 +17,7 @@ export default function SaleCarousel({ products }: SaleCarouselProps) {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
 
   return (
-    <section className="mx-auto max-w-screen-xl rounded-2xl border border-red-100 bg-red-50 px-4 py-8 my-6">
+    <section className="my-8 rounded-[2rem] border border-red-100 bg-gradient-to-br from-red-50 to-white px-5 py-8 sm:px-8">
       <SectionHeader
         title="Sản phẩm khuyến mãi"
         href="/products?sale=true"

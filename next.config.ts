@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "i.pinimg.com" },
       { protocol: "https", hostname: "forumstatic.oneplusmobile.com" },
       { protocol: "https", hostname: "cdn.shopify.com" },
+      { protocol: "https", hostname: "www.nintendo.com" },
       { protocol: "https", hostname: "en.onepiece-cardgame.com" },
       { protocol: "https", hostname: "jawbreakers.cards" },
       { protocol: "https", hostname: "cdn.hstatic.net" },
