@@ -1,8 +1,15 @@
-import { fetchProductsByFilters } from "@/lib/api/products"
-import { type Product } from "@/lib/api/products"
-import ProductCard from "@/components/ui/ProductCard"
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { type Product, fetchProductsByFilters } from "@/lib/api/products"
+import ProductCatalogFilters from "@/components/product/ProductCatalogFilters"
+import ProductCard from "@/components/ui/ProductCard"
+import Breadcrumb from "@/components/ui/Breadcrumb"
+import EmptyState from "@/components/ui/EmptyState"
+
+type AvailabilityFilter =
+  | "all"
+  | "in-stock"
+  | "low-stock"
+  | "out-of-stock"
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -11,20 +18,17 @@ interface ProductsPageProps {
     q?: string
     category?: string
     sub?: string
+    availability?: AvailabilityFilter
   }>
-}
-
-function normalize(value: string) {
-  return value.trim().toLowerCase()
-}
-
-function containsAny(value: string, keywords: string[]) {
-  return keywords.some((keyword) => value.includes(keyword))
 }
 
 type BackendFilters = {
   categoryName?: string
   productType?: string
+}
+
+function normalize(value: string) {
+  return value.trim().toLowerCase()
 }
 
 function resolveBackendFilters(
@@ -34,7 +38,7 @@ function resolveBackendFilters(
   const normalizedCategory = category ? normalize(category) : ""
   const normalizedSub = sub ? normalize(sub) : ""
 
-  const categoryName: string | undefined =
+  const categoryName =
     normalizedCategory === "pokemon-tcg" ? "Pokemon TCG" : undefined
 
   let productType: string | undefined
@@ -50,16 +54,16 @@ function resolveBackendFilters(
 }
 
 function resolvePageTitle(category?: string, sub?: string, q?: string) {
-  if (q && q.trim()) return `Kết quả cho "${q.trim()}"`
+  if (q?.trim()) return `Kết quả cho "${q.trim()}"`
 
   const normalizedCategory = category ? normalize(category) : ""
   const normalizedSub = sub ? normalize(sub) : ""
 
-  if (normalizedCategory === "console") return "Console"
-  if (normalizedCategory === "accessory") return "Accessory"
-  if (normalizedCategory === "pokemon-tcg") return "Pokemon Trading Card Game"
-  if (normalizedSub === "console") return "Console"
-  if (normalizedSub === "accessory") return "Accessory"
+  if (normalizedCategory === "console") return "Máy chơi game"
+  if (normalizedCategory === "accessory") return "Phụ kiện"
+  if (normalizedCategory === "pokemon-tcg") return "Pokémon Trading Card Game"
+  if (normalizedSub === "console") return "Máy chơi game"
+  if (normalizedSub === "accessory") return "Phụ kiện"
 
   return "Tất cả sản phẩm"
 }
@@ -70,6 +74,7 @@ function buildProductsUrl(
   category?: string,
   sub?: string,
   q?: string,
+  availability?: AvailabilityFilter,
 ) {
   const params = new URLSearchParams()
   params.set("sort", sort)
@@ -77,29 +82,59 @@ function buildProductsUrl(
   if (category) params.set("category", category)
   if (sub) params.set("sub", sub)
   if (q) params.set("q", q)
+  if (availability && availability !== "all") {
+    params.set("availability", availability)
+  }
   return `/products?${params.toString()}`
 }
 
 function sortProducts(products: Product[], sort: string): Product[] {
-  const arr = [...products]
+  const sorted = [...products]
   if (sort === "newest") {
-    return arr.sort(
+    return sorted.sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     )
   }
-  if (sort === "price-asc")
-    return arr.sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
-  if (sort === "price-desc" || sort === "default")
-    return arr.sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
-  return arr
+  if (sort === "price-asc") {
+    return sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
+  }
+  if (sort === "price-desc" || sort === "default") {
+    return sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
+  }
+  return sorted
+}
+
+function filterProductsByAvailability(
+  products: Product[],
+  availability: AvailabilityFilter,
+) {
+  if (availability === "in-stock") {
+    return products.filter((product) => product.stock > 0)
+  }
+  if (availability === "low-stock") {
+    return products.filter(
+      (product) => product.stock > 0 && product.stock <= 5,
+    )
+  }
+  if (availability === "out-of-stock") {
+    return products.filter((product) => product.stock <= 0)
+  }
+  return products
 }
 
 export default async function ProductsPage({
   searchParams,
 }: ProductsPageProps) {
   const params = await searchParams
-  const { sort = "price-desc", page = "1", category, sub, q } = params
+  const {
+    sort = "price-desc",
+    page = "1",
+    category,
+    sub,
+    q,
+    availability = "all",
+  } = params
   const { categoryName, productType } = resolveBackendFilters(category, sub)
 
   const rawProducts = await fetchProductsByFilters({
@@ -107,131 +142,158 @@ export default async function ProductsPage({
     categoryName,
     productType,
   })
-
-  const filteredProducts = rawProducts
-
-  let products = sortProducts(filteredProducts, sort)
+  const filteredProducts = filterProductsByAvailability(
+    rawProducts,
+    availability,
+  )
+  const sortedProducts = sortProducts(filteredProducts, sort)
 
   const currentPage = Math.max(Number(page) || 1, 1)
   const pageSize = 24
-  const totalPages = Math.max(Math.ceil(products.length / pageSize), 1)
+  const totalPages = Math.max(
+    Math.ceil(sortedProducts.length / pageSize),
+    1,
+  )
   const safePage = Math.min(currentPage, totalPages)
   const start = (safePage - 1) * pageSize
-  const end = start + pageSize
-  products = products.slice(start, end)
+  const products = sortedProducts.slice(start, start + pageSize)
 
   const pageTitle = resolvePageTitle(category, sub, q)
-
   const sortHref = (nextSort: string) =>
-    buildProductsUrl(nextSort, 1, category, sub, q)
+    buildProductsUrl(nextSort, 1, category, sub, q, availability)
   const pageHref = (nextPage: number) =>
-    buildProductsUrl(sort, nextPage, category, sub, q)
+    buildProductsUrl(sort, nextPage, category, sub, q, availability)
+
+  const sortOptions = [
+    { value: "price-desc", label: "Giá giảm" },
+    { value: "price-asc", label: "Giá tăng" },
+    { value: "newest", label: "Mới nhất" },
+  ]
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      {/* Breadcrumb */}
-      <nav className="mb-6 flex items-center gap-1 text-sm text-gray-500">
-        <Link href="/" className="hover:text-(--brand-red)">
-          Trang chủ
-        </Link>
-        <ChevronRight size={14} />
-        <span className="font-medium text-gray-800">{pageTitle}</span>
-      </nav>
+      <Breadcrumb items={[{ label: pageTitle }]} className="mb-6" />
 
-      <div className="flex gap-6">
-        <div className="flex-1">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-xl font-extrabold text-gray-900">
+      <header className="mb-6">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-red)]">
+          Danh mục mua sắm
+        </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-extrabold text-slate-950 sm:text-3xl">
               {pageTitle}
             </h1>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-500">
-                Trang {safePage}/{totalPages} - {filteredProducts.length} sản
-                phẩm
-              </span>
-              <div className="flex items-center gap-2">
-                <Link
-                  href={sortHref("default")}
-                  className={`rounded-lg border px-3 py-1.5 ${
-                    sort === "default"
-                      ? "border-(--brand-red) text-(--brand-red)"
-                      : "border-gray-300 text-gray-700"
-                  }`}
-                >
-                  Mặc định
-                </Link>
-                <Link
-                  href={sortHref("price-asc")}
-                  className={`rounded-lg border px-3 py-1.5 ${
-                    sort === "price-asc"
-                      ? "border-(--brand-red) text-(--brand-red)"
-                      : "border-gray-300 text-gray-700"
-                  }`}
-                >
-                  Giá tăng
-                </Link>
-                <Link
-                  href={sortHref("price-desc")}
-                  className={`rounded-lg border px-3 py-1.5 ${
-                    sort === "price-desc"
-                      ? "border-(--brand-red) text-(--brand-red)"
-                      : "border-gray-300 text-gray-700"
-                  }`}
-                >
-                  Giá giảm
-                </Link>
-              </div>
-            </div>
+            <p className="mt-1 text-sm text-slate-500">
+              {filteredProducts.length} sản phẩm phù hợp
+              {totalPages > 1
+                ? ` · Trang ${safePage} trên ${totalPages}`
+                : ""}
+            </p>
           </div>
 
-          {/* Grid */}
-          {products.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-24 text-center text-gray-500">
-              <span className="text-5xl">😕</span>
-              <p className="text-lg font-semibold">Không tìm thấy sản phẩm</p>
+          <div className="hidden items-center gap-2 lg:flex">
+            <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Sắp xếp
+            </span>
+            {sortOptions.map((option) => (
               <Link
-                href="/products"
-                className="text-sm text-(--brand-red) hover:underline"
+                key={option.value}
+                href={sortHref(option.value)}
+                aria-current={sort === option.value ? "page" : undefined}
+                className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                  sort === option.value
+                    ? "border-[var(--brand-red)] bg-red-50 text-[var(--brand-red)]"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                }`}
               >
-                Xem tất cả sản phẩm
+                {option.label}
               </Link>
-            </div>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <div className="grid gap-5 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-7">
+        <ProductCatalogFilters
+          category={category}
+          sub={sub}
+          availability={availability}
+          sort={sort}
+        />
+
+        <main className="min-w-0">
+          {products.length === 0 ? (
+            <EmptyState
+              compact
+              icon="search"
+              eyebrow="Không có kết quả phù hợp"
+              title={
+                q?.trim()
+                  ? `Chưa tìm thấy “${q.trim()}”`
+                  : "Chưa có sản phẩm theo lựa chọn này"
+              }
+              description={
+                q?.trim()
+                  ? "Hãy thử một từ khóa ngắn hơn, kiểm tra lại chính tả hoặc xóa bộ lọc để mở rộng kết quả tìm kiếm."
+                  : "Các bộ lọc hiện tại chưa khớp với sản phẩm nào. Bạn có thể đặt lại bộ lọc để xem toàn bộ cửa hàng."
+              }
+              details={[
+                "Kiểm tra chính tả",
+                "Thử từ khóa ngắn hơn",
+                "Đặt lại bộ lọc",
+              ]}
+              primaryAction={{
+                label: "Xem tất cả sản phẩm",
+                href: "/products",
+                icon: "shopping",
+              }}
+              secondaryAction={{
+                label: "Nhờ tư vấn",
+                href: "/contact",
+                icon: "arrow",
+              }}
+            />
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
-              <div className="mt-6 flex items-center justify-center gap-3">
+              <nav
+                aria-label="Phân trang sản phẩm"
+                className="mt-8 flex items-center justify-center gap-3"
+              >
                 <Link
                   href={pageHref(Math.max(safePage - 1, 1))}
-                  className={`rounded-lg border px-4 py-2 text-sm ${
+                  aria-disabled={safePage === 1}
+                  className={`rounded-xl border px-4 py-2.5 text-sm font-semibold ${
                     safePage === 1
-                      ? "pointer-events-none border-gray-200 text-gray-400"
-                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      ? "pointer-events-none border-slate-200 text-slate-400"
+                      : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
                   Trang trước
                 </Link>
-                <span className="text-sm text-gray-600">
+                <span className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600">
                   {safePage} / {totalPages}
                 </span>
                 <Link
                   href={pageHref(Math.min(safePage + 1, totalPages))}
-                  className={`rounded-lg border px-4 py-2 text-sm ${
+                  aria-disabled={safePage === totalPages}
+                  className={`rounded-xl border px-4 py-2.5 text-sm font-semibold ${
                     safePage === totalPages
-                      ? "pointer-events-none border-gray-200 text-gray-400"
-                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      ? "pointer-events-none border-slate-200 text-slate-400"
+                      : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
                   Trang sau
                 </Link>
-              </div>
+              </nav>
             </>
           )}
-        </div>
+        </main>
       </div>
     </div>
   )

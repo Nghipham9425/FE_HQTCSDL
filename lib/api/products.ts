@@ -34,7 +34,7 @@ function toDisplayableStock<T extends ProductStockLike>(product: T): T {
 }
 
 function isDisplayableProduct(product: ProductStockLike) {
-  return product.isActive && resolveAvailableStock(product) > 0
+  return product.isActive
 }
 
 type QueryValue = string | number | boolean | undefined
