@@ -5,11 +5,11 @@ import {
   Minus,
   Plus,
   Trash2,
-  ShoppingBag,
   ChevronRight,
   ArrowLeft,
 } from "lucide-react"
 import { useCartStore } from "@/lib/stores/cartStore"
+import EmptyState from "@/components/ui/EmptyState"
 
 function formatPrice(p: number) {
   return p.toLocaleString("vi-VN") + "đ"
@@ -27,20 +27,28 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-6 px-4 py-24 text-center">
-        <ShoppingBag size={72} className="text-gray-300" />
-        <h1 className="text-2xl font-extrabold text-gray-800">
-          Giỏ hàng trống
-        </h1>
-        <p className="text-gray-500">
-          Bạn chưa thêm sản phẩm nào vào giỏ hàng.
-        </p>
-        <Link
-          href="/products"
-          className="rounded-xl bg-[var(--brand-red)] px-8 py-3 font-bold text-white hover:bg-[var(--brand-red-dark)] transition-colors"
-        >
-          Mua sắm ngay
-        </Link>
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
+        <EmptyState
+          icon="cart"
+          eyebrow="Giỏ hàng của bạn"
+          title="Chiếc giỏ này đang chờ món đồ đầu tiên"
+          description="Khám phá máy chơi game, phụ kiện và thẻ bài chính hãng. Những sản phẩm bạn chọn sẽ được giữ gọn tại đây trước khi thanh toán."
+          details={[
+            "Sản phẩm chính hãng",
+            "Đổi trả trong 7 ngày",
+            "Giao hàng toàn quốc",
+          ]}
+          primaryAction={{
+            label: "Bắt đầu mua sắm",
+            href: "/products",
+            icon: "shopping",
+          }}
+          secondaryAction={{
+            label: "Về trang chủ",
+            href: "/",
+            icon: "home",
+          }}
+        />
       </div>
     )
   }

@@ -5,6 +5,8 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { cancelMyOrder, getMyOrders } from "@/lib/api/orders"
 import type { OrderListItem } from "@/lib/types/order"
+import EmptyState from "@/components/ui/EmptyState"
+import { Skeleton } from "@/components/ui/skeleton"
 
 function formatPrice(value: number) {
   return value.toLocaleString("vi-VN") + "đ"
@@ -107,17 +109,64 @@ export default function AccountOrdersPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
-          Đang tải đơn hàng...
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <div className="space-y-5 p-5">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="grid gap-3 md:grid-cols-[0.7fr_1.3fr_1fr_0.6fr_1fr]"
+              >
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-4 w-10" />
+                <Skeleton className="h-4 w-24 md:justify-self-end" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700 shadow-sm">
-          {error}
-        </div>
+        <EmptyState
+          compact
+          icon="error"
+          eyebrow="Không thể tải dữ liệu"
+          title="Danh sách đơn hàng đang tạm gián đoạn"
+          description={error}
+          primaryAction={{
+            label: "Thử tải lại",
+            onClick: () => window.location.reload(),
+            icon: "refresh",
+          }}
+          secondaryAction={{
+            label: "Liên hệ hỗ trợ",
+            href: "/contact",
+            icon: "arrow",
+          }}
+        />
       ) : orders.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
-          Bạn chưa có đơn hàng nào.
-        </div>
+        <EmptyState
+          icon="orders"
+          eyebrow="Đơn hàng của tôi"
+          title="Hành trình mua sắm của bạn bắt đầu từ đây"
+          description="Bạn chưa có đơn hàng nào. Hãy chọn món đồ yêu thích, hoàn tất thanh toán và theo dõi từng chặng giao hàng ngay trong tài khoản."
+          details={[
+            "Theo dõi trạng thái dễ dàng",
+            "Xem lại chi tiết bất cứ lúc nào",
+          ]}
+          primaryAction={{
+            label: "Khám phá cửa hàng",
+            href: "/products",
+            icon: "shopping",
+          }}
+          secondaryAction={{
+            label: "Tra cứu đơn hàng",
+            href: "/tracking",
+            icon: "arrow",
+          }}
+        />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="hidden grid-cols-12 gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase text-slate-500 md:grid">
