@@ -1,86 +1,64 @@
 "use client"
+
 import Link from "next/link"
-import { useState, useRef } from "react"
-import { ChevronDown } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { PackageSearch } from "lucide-react"
 
 const navItems = [
   { label: "TRANG CHỦ", href: "/" },
-  {
-    label: "CONSOLE",
-    href: "/products?category=console",
-    children: [{ label: "Tất cả Console", href: "/products?category=console" }],
-  },
-  {
-    label: "ACCESSORY",
-    href: "/products?category=accessory",
-    children: [
-      { label: "Tất cả Accessory", href: "/products?category=accessory" },
-    ],
-  },
-  {
-    label: "POKEMON TCG",
-    href: "/products?category=pokemon-tcg",
-    children: [
-      { label: "Pokemon TCG", href: "/products?category=pokemon-tcg" },
-    ],
-  },
+  { label: "CONSOLE", href: "/products?category=console" },
+  { label: "PHỤ KIỆN", href: "/products?category=accessory" },
+  { label: "POKÉMON TCG", href: "/products?category=pokemon-tcg" },
   { label: "HỖ TRỢ", href: "/support" },
   { label: "GIỚI THIỆU", href: "/about" },
   { label: "LIÊN HỆ", href: "/contact" },
-  { label: "TRACKING ORDER", href: "/tracking" },
 ]
 
 export default function NavMenu() {
-  const [openMenu, setOpenMenu] = useState<string | null>(null)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pathname = usePathname()
 
-  function onEnter(label: string) {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    setOpenMenu(label)
-  }
-
-  function onLeave() {
-    timeoutRef.current = setTimeout(() => setOpenMenu(null), 150)
+  function isActive(href: string) {
+    if (href.includes("?")) return false
+    return href === "/" ? pathname === "/" : pathname.startsWith(href)
   }
 
   return (
-    <nav className="hidden border-b border-gray-200 bg-white shadow-sm lg:block">
-      <div className="mx-auto flex max-w-screen-xl items-center justify-center gap-0.5 px-4">
-        {navItems.map((item) => (
-          <div
-            key={item.label}
-            className="relative"
-            onMouseEnter={() => item.children && onEnter(item.label)}
-            onMouseLeave={onLeave}
-          >
+    <nav
+      aria-label="Điều hướng chính"
+      className="hidden border-b border-slate-200 bg-white shadow-sm lg:block"
+    >
+      <div className="mx-auto flex max-w-screen-xl items-center justify-center px-4">
+        {navItems.map((item) => {
+          const active = isActive(item.href)
+          return (
             <Link
+              key={item.href}
               href={item.href}
-              className="flex items-center gap-0.5 px-3 py-3 text-[13px] font-medium text-gray-700 hover:text-[var(--brand-red)] transition-colors"
+              aria-current={active ? "page" : undefined}
+              className={`relative px-3.5 py-3 text-[12px] font-bold tracking-[0.04em] transition-colors after:absolute after:inset-x-3.5 after:bottom-0 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-full after:bg-[var(--brand-red)] after:transition-transform hover:text-[var(--brand-red)] hover:after:scale-x-100 ${
+                active
+                  ? "text-[var(--brand-red)] after:scale-x-100"
+                  : "text-slate-700"
+              }`}
             >
               {item.label}
-              {item.children && <ChevronDown size={12} />}
             </Link>
+          )
+        })}
 
-            {/* Dropdown */}
-            {item.children && openMenu === item.label && (
-              <div
-                className="absolute left-0 top-full z-50 min-w-[200px] rounded-b-lg border border-gray-100 bg-white py-1 shadow-xl"
-                onMouseEnter={() => onEnter(item.label)}
-                onMouseLeave={onLeave}
-              >
-                {item.children.map((child) => (
-                  <Link
-                    key={child.href}
-                    href={child.href}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--brand-red)] transition-colors"
-                  >
-                    {child.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+        <span className="mx-2 h-4 w-px bg-slate-200" />
+        <Link
+          href="/tracking"
+          aria-current={pathname.startsWith("/tracking") ? "page" : undefined}
+          className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] transition-colors ${
+            pathname.startsWith("/tracking")
+              ? "bg-[var(--brand-navy)] text-white"
+              : "bg-blue-50 text-[var(--brand-navy)] hover:bg-blue-100"
+          }`}
+        >
+          <PackageSearch size={14} />
+          THEO DÕI ĐƠN
+        </Link>
       </div>
     </nav>
   )

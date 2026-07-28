@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation"
-import Link from "next/link"
-import { ChevronRight } from "lucide-react"
 import { fetchProductById, fetchRelatedProducts } from "@/lib/api/products"
 import ImageGallery from "@/components/product/ImageGallery"
 import ProductInfo from "@/components/product/ProductInfo"
 import RelatedProducts from "@/components/product/RelatedProducts"
+import Breadcrumb from "@/components/ui/Breadcrumb"
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>
@@ -55,24 +54,20 @@ export default async function ProductDetailPage({
 
   return (
     <div className="pb-16">
-      {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
-        <nav className="mx-auto flex max-w-screen-xl items-center gap-1 px-4 py-3 text-sm text-gray-500">
-          <Link href="/" className="hover:text-[var(--brand-red)]">
-            Trang chủ
-          </Link>
-          <ChevronRight size={14} />
-          <Link
-            href={`/products?category=${categoryHref}`}
-            className="hover:text-[var(--brand-red)]"
-          >
-            {categoryLabel}
-          </Link>
-          <ChevronRight size={14} />
-          <span className="line-clamp-1 font-medium text-gray-800">
-            {product.name}
-          </span>
-        </nav>
+        <div className="mx-auto max-w-screen-xl px-4">
+          <Breadcrumb
+            items={[
+              { label: "Sản phẩm", href: "/products" },
+              {
+                label: categoryLabel,
+                href: `/products?category=${categoryHref}`,
+              },
+              { label: product.name },
+            ]}
+            className="py-3"
+          />
+        </div>
       </div>
 
       {/* Main */}

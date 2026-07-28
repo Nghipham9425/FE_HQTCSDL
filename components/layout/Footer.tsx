@@ -1,142 +1,169 @@
-import Link from "next/link"
 import Image from "next/image"
+import Link from "next/link"
 import {
-  Facebook,
-  Youtube,
-  Instagram,
-  Twitch,
-  Mail,
-  Phone,
-  MapPin,
-  CreditCard,
-  Smartphone,
-  Wallet,
   Banknote,
-  Package,
+  Clock3,
+  CreditCard,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  MessageCircleMore,
+  Phone,
+  Smartphone,
+  WalletCards,
+  Youtube,
 } from "lucide-react"
 
 const supportLinks = [
-  { label: "Tìm kiếm sản phẩm", href: "/products" },
-  { label: "Kiểm tra đơn hàng", href: "/tracking" },
+  { label: "Tất cả sản phẩm", href: "/products" },
+  { label: "Theo dõi đơn hàng", href: "/tracking" },
   { label: "Hướng dẫn mua hàng", href: "/support/buying-guide" },
+  { label: "Trung tâm hỗ trợ", href: "/support" },
+  { label: "Liên hệ cửa hàng", href: "/contact" },
 ]
 
 const policyLinks = [
-  { label: "Chính sách đổi trả", href: "/policy/return" },
-  { label: "Chính sách bảo hành", href: "/policy/warranty" },
-  { label: "Chính sách bảo mật", href: "/policy/privacy" },
-  { label: "Chính sách vận chuyển", href: "/policy/shipping" },
-  { label: "Chính sách kiểm hàng", href: "/policy/inspection" },
-  { label: "Chính sách thanh toán", href: "/policy/payment" },
+  { label: "Đổi trả", href: "/policy/return" },
+  { label: "Bảo hành", href: "/policy/warranty" },
+  { label: "Vận chuyển", href: "/policy/shipping" },
+  { label: "Kiểm hàng", href: "/policy/inspection" },
+  { label: "Thanh toán", href: "/policy/payment" },
+  { label: "Bảo mật", href: "/policy/privacy" },
+  { label: "Điều khoản", href: "/policy/terms" },
 ]
 
 const socials = [
-  { Icon: Facebook, href: "#", label: "Facebook", bg: "bg-blue-600" },
-  { Icon: Youtube, href: "#", label: "YouTube", bg: "bg-red-600" },
+  {
+    Icon: Facebook,
+    href: "https://www.facebook.com/",
+    label: "Facebook",
+  },
   {
     Icon: Instagram,
-    href: "#",
+    href: "https://www.instagram.com/",
     label: "Instagram",
-    bg: "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400",
   },
-  { Icon: Twitch, href: "#", label: "Twitch", bg: "bg-purple-600" },
+  {
+    Icon: Youtube,
+    href: "https://www.youtube.com/",
+    label: "YouTube",
+  },
 ]
 
 const payments = [
-  { label: "VISA", Icon: CreditCard, bg: "bg-blue-600", text: "text-white" },
-  {
-    label: "MasterCard",
-    Icon: CreditCard,
-    bg: "bg-red-500",
-    text: "text-white",
-  },
-  { label: "MoMo", Icon: Smartphone, bg: "bg-pink-600", text: "text-white" },
-  { label: "ZaloPay", Icon: Wallet, bg: "bg-sky-500", text: "text-white" },
-  { label: "Tiền mặt", Icon: Banknote, bg: "bg-green-600", text: "text-white" },
-  { label: "Trả sau", Icon: Package, bg: "bg-orange-500", text: "text-white" },
+  { label: "Visa", Icon: CreditCard },
+  { label: "Mastercard", Icon: WalletCards },
+  { label: "MoMo", Icon: Smartphone },
+  { label: "ZaloPay", Icon: Smartphone },
+  { label: "Chuyển khoản", Icon: Banknote },
+  { label: "COD", Icon: Banknote },
 ]
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-white">
-      {/* ── Main grid ── */}
-      <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Col 1 – Brand + contact + socials */}
-        <div className="flex flex-col gap-4">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative h-11 w-11 shrink-0">
-              <Image
-                src="https://www.pngkey.com/png/full/519-5194869_pikachu-circle-png.png"
-                alt="CardgameCenter logo"
-                fill
-                className="object-contain drop-shadow-sm"
-              />
-            </div>
-            <div className="leading-none">
-              <span className="text-xl font-black text-[var(--brand-navy)]">
-                Cardgame<span className="text-[var(--brand-red)]">Center</span>
+    <footer className="mt-12 bg-[#071426] text-slate-300">
+      <div className="border-b border-white/10 bg-[var(--brand-navy)]">
+        <div className="mx-auto flex max-w-screen-xl flex-col gap-3 px-4 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+              <MessageCircleMore size={20} />
+            </span>
+            <span>
+              <span className="block text-sm font-bold text-white">
+                Cần tư vấn chọn máy hoặc thẻ bài?
               </span>
-              <p className="text-[10px] tracking-widest text-gray-400 uppercase mt-0.5">
-                Game · Card · Store
-              </p>
-            </div>
-          </Link>
-
-          <div className="space-y-2 text-sm text-gray-600">
-            <div className="flex items-start gap-2">
-              <MapPin
-                size={14}
-                className="mt-0.5 shrink-0 text-[var(--brand-red)]"
-              />
-              <span>TP. Hồ Chí Minh</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone size={14} className="shrink-0 text-[var(--brand-red)]" />
-              <a
-                href="tel:0985419095"
-                className="font-semibold text-[var(--brand-red)] hover:underline"
-              >
-                +84 985419095
-              </a>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail size={14} className="shrink-0 text-gray-400" />
-              <span>support@cardgamecenter.vn</span>
-            </div>
+              <span className="block text-xs text-blue-100">
+                Đội ngũ CardgameCenter hỗ trợ từ 08:30 đến 21:30 mỗi ngày.
+              </span>
+            </span>
           </div>
-
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-              Mạng xã hội
-            </p>
-            <div className="flex gap-2">
-              {socials.map(({ Icon, href, label, bg }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-white shadow-sm transition-opacity hover:opacity-80 ${bg}`}
-                >
-                  <Icon size={16} />
-                </Link>
-              ))}
-            </div>
+          <div className="flex gap-2">
+            <a
+              href="tel:0985419095"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[var(--brand-navy)] transition-transform hover:-translate-y-0.5"
+            >
+              <Phone size={16} />
+              0985 419 095
+            </a>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-xl border border-white/25 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
+            >
+              Gửi yêu cầu
+            </Link>
           </div>
         </div>
+      </div>
 
-        {/* Col 2 – Hỗ trợ khách hàng */}
+      <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[1.25fr_0.8fr_0.9fr_1.05fr]">
         <div>
-          <h4 className="mb-4 border-b border-gray-100 pb-2 text-sm font-bold text-gray-800">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+          >
+            <span className="relative h-12 w-12 shrink-0 rounded-full bg-white">
+              <Image
+                src="https://www.pngkey.com/png/full/519-5194869_pikachu-circle-png.png"
+                alt=""
+                fill
+                sizes="48px"
+                className="object-contain p-0.5"
+              />
+            </span>
+            <span className="leading-none">
+              <span className="text-xl font-black text-white">
+                Cardgame<span className="text-red-400">Center</span>
+              </span>
+              <span className="mt-1.5 block text-[9px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                Game · Card · Store
+              </span>
+            </span>
+          </Link>
+
+          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">
+            Điểm đến dành cho người yêu console, phụ kiện gaming và Pokémon
+            Trading Card Game chính hãng.
+          </p>
+
+          <address className="mt-5 space-y-3 text-sm not-italic">
+            <a
+              href="https://maps.google.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-2.5 transition-colors hover:text-white"
+            >
+              <MapPin
+                size={16}
+                className="mt-0.5 shrink-0 text-red-400"
+              />
+              TP. Hồ Chí Minh, Việt Nam
+            </a>
+            <a
+              href="mailto:support@cardgamecenter.vn"
+              className="flex items-center gap-2.5 transition-colors hover:text-white"
+            >
+              <Mail size={16} className="shrink-0 text-red-400" />
+              support@cardgamecenter.vn
+            </a>
+            <span className="flex items-center gap-2.5">
+              <Clock3 size={16} className="shrink-0 text-red-400" />
+              08:30 - 21:30, Thứ 2 - Chủ nhật
+            </span>
+          </address>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-white">
             Hỗ trợ khách hàng
-          </h4>
-          <ul className="space-y-2.5">
+          </h2>
+          <ul className="mt-5 space-y-3">
             {supportLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[var(--brand-red)] transition-colors"
+                  className="inline-flex text-sm transition-colors hover:text-red-400"
                 >
-                  <span className="text-[var(--brand-red)]">•</span>{" "}
                   {link.label}
                 </Link>
               </li>
@@ -144,19 +171,17 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Col 3 – Chính sách */}
         <div>
-          <h4 className="mb-4 border-b border-gray-100 pb-2 text-sm font-bold text-gray-800">
-            Chính sách
-          </h4>
-          <ul className="space-y-2.5">
+          <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-white">
+            Chính sách mua hàng
+          </h2>
+          <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-1">
             {policyLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[var(--brand-red)] transition-colors"
+                  className="inline-flex text-sm transition-colors hover:text-red-400"
                 >
-                  <span className="text-[var(--brand-red)]">•</span>{" "}
                   {link.label}
                 </Link>
               </li>
@@ -164,39 +189,42 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Col 4 – Newsletter + Payment */}
-        <div className="flex flex-col gap-5">
-          <div>
-            <h4 className="mb-1 text-sm font-bold text-gray-800">
-              Đăng ký nhận ưu đãi
-            </h4>
-            <p className="mb-3 text-xs leading-relaxed text-gray-500">
-              Bạn muốn nhận khuyến mãi đặc biệt? Đăng kí tham gia ngay cộng đồng
-              hơn 68.000+ người theo dõi!
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Email của bạn..."
-                className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-[var(--brand-red)] focus:outline-none"
-              />
-              <button className="rounded-lg bg-[var(--brand-red)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-red-dark)] transition-colors">
-                Đăng ký
-              </button>
-            </div>
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-white">
+            Kết nối với chúng mình
+          </h2>
+          <p className="mt-5 text-sm leading-6 text-slate-400">
+            Theo dõi để cập nhật sản phẩm mới, lịch mở bán và các giải đấu cộng
+            đồng.
+          </p>
+
+          <div className="mt-4 flex gap-2.5">
+            {socials.map(({ Icon, href, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`CardgameCenter trên ${label}`}
+                title={label}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:-translate-y-0.5 hover:border-red-400/50 hover:bg-red-400/10 hover:text-white"
+              >
+                <Icon size={17} />
+              </a>
+            ))}
           </div>
 
-          <div>
-            <p className="mb-2.5 text-xs font-bold uppercase tracking-widest text-gray-700">
-              Phương thức thanh toán
+          <div className="mt-7">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+              Thanh toán an toàn
             </p>
-            <div className="flex flex-wrap gap-2">
-              {payments.map(({ label, Icon, bg, text }) => (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {payments.map(({ label, Icon }) => (
                 <span
                   key={label}
-                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold shadow-sm ${bg} ${text}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300"
                 >
-                  <Icon size={13} />
+                  <Icon size={13} className="text-slate-500" />
                   {label}
                 </span>
               ))}
@@ -205,30 +233,10 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ── Copyright ── */}
-      <div className="border-t border-gray-100 bg-gray-50 py-4">
-        <div className="mx-auto flex max-w-screen-xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-gray-400 sm:flex-row">
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-screen-xl flex-col items-center justify-between gap-2 px-4 py-4 text-center text-xs text-slate-500 sm:flex-row sm:text-left">
           <span>© 2026 CardgameCenter. Bản quyền thuộc về CardgameCenter.</span>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/policy/privacy"
-              className="hover:text-gray-600 transition-colors"
-            >
-              Bảo mật
-            </Link>
-            <Link
-              href="/policy/terms"
-              className="hover:text-gray-600 transition-colors"
-            >
-              Điều khoản
-            </Link>
-            <Link
-              href="/sitemap"
-              className="hover:text-gray-600 transition-colors"
-            >
-              Sitemap
-            </Link>
-          </div>
+          <span>Thiết kế cho cộng đồng game & thẻ bài Việt Nam.</span>
         </div>
       </div>
     </footer>

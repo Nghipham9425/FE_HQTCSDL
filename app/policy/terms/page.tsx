@@ -1,16 +1,15 @@
-import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import Breadcrumb from "@/components/ui/Breadcrumb"
 
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <nav className="mb-6 flex items-center gap-1 text-sm text-gray-500">
-        <Link href="/" className="hover:text-(--brand-red)">
-          Trang chủ
-        </Link>
-        <ChevronRight size={14} />
-        <span className="font-medium text-gray-800">Điều khoản dịch vụ</span>
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: "Chính sách", href: "/policy/terms" },
+          { label: "Điều khoản dịch vụ" },
+        ]}
+        className="mb-6"
+      />
 
       <h1 className="text-3xl font-black text-gray-900">Điều khoản dịch vụ</h1>
       <p className="mt-2 text-sm text-gray-600">
