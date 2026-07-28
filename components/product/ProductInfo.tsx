@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Zap, Shield, Package, RefreshCw, Truck, HeadphonesIcon, CheckCircle, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { notify } from "@/lib/notifications";
 import { type ProductDetail } from "@/lib/api/products";
 import { useCartStore } from "@/lib/stores/cartStore";
 import { useWishlistStore } from "@/lib/stores/wishlistStore";
@@ -70,7 +71,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       qty,
     );
 
-    toast.success(`Đã thêm ${qty} sản phẩm vào giỏ hàng`);
+    notify.cartAdded(product.name, qty);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   }
@@ -93,7 +94,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       qty,
     );
 
-    toast.success("Đã thêm sản phẩm, chuyển đến thanh toán");
+    notify.cartAdded(product.name, qty);
     router.push("/checkout");
   }
 

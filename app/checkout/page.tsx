@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronRight, MapPin, Plus } from "lucide-react"
 import { toast } from "sonner"
+import { notify } from "@/lib/notifications"
 import { useCartStore } from "@/lib/stores/cartStore"
 import { placeOrder } from "@/lib/api/orders"
 import { getAccessToken } from "@/lib/api/auth"
@@ -303,13 +304,15 @@ export default function CheckoutPage() {
           )
         }
 
-        toast.success("Đang chuyển sang cổng thanh toán SePay...")
+        notify.paymentRedirect()
         await redirectToSePayGateway(order.id, order.finalAmount)
         return
       }
 
+      notify.orderPlaced(order.id)
       router.push(`/checkout/success?orderId=${order.id}`)
     } catch (err) {
+      notify.dismissPaymentRedirect()
       if (isUnauthorizedError(err)) {
         router.push(`/auth/login?next=${encodeURIComponent("/checkout")}`)
         return
