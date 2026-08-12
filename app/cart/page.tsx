@@ -9,6 +9,7 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { useCartStore } from "@/lib/stores/cartStore"
+import { resolveProductImage } from "@/lib/product-image"
 import EmptyState from "@/components/ui/EmptyState"
 
 function formatPrice(p: number) {
@@ -89,10 +90,7 @@ export default function CartPage() {
                 <div className="col-span-12 flex items-center gap-3 md:col-span-6">
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                     <Image
-                      src={
-                        item.product.thumbnail ||
-                        "https://picsum.photos/seed/cardgame-placeholder/400/500"
-                      }
+                      src={resolveProductImage(item.product.thumbnail)}
                       alt={item.product.name}
                       fill
                       sizes="80px"

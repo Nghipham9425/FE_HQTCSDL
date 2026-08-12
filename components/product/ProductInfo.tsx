@@ -13,14 +13,14 @@ interface ProductInfoProps {
 }
 
 function formatPrice(price: number) {
-  return price.toLocaleString("vi-VN") + "đ";
+  return price.toLocaleString("vi-VN") + "₫";
 }
 
 function resolveCategoryLabel(productType: string) {
-  if (productType === "TCG_CARD") return "Pokemon TCG";
-  if (productType === "ACCESSORY") return "Phu kien";
-  if (productType === "CONSOLE") return "Console";
-  return "San pham";
+  if (productType === "TCG_CARD") return "Thẻ bài Pokémon TCG";
+  if (productType === "ACCESSORY") return "Phụ kiện";
+  if (productType === "CONSOLE") return "Máy chơi game";
+  return "Sản phẩm";
 }
 
 const commitments = [
@@ -114,8 +114,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       });
       toast.success(
         wasWished
-          ? "Đã xóa sản phẩm khỏi wishlist"
-          : "Đã thêm sản phẩm vào wishlist",
+          ? "Đã xóa sản phẩm khỏi danh sách yêu thích"
+          : "Đã thêm sản phẩm vào danh sách yêu thích",
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
@@ -123,13 +123,13 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         message === "Unauthorized" || message === "Session expired";
 
       if (isUnauthorized) {
-        toast.error("Vui lòng đăng nhập để dùng wishlist");
+        toast.error("Vui lòng đăng nhập để dùng danh sách yêu thích");
         const nextPath = `${window.location.pathname}${window.location.search}`;
         window.location.href = `/auth/login?next=${encodeURIComponent(nextPath)}`;
         return;
       }
 
-      toast.error(message || "Không thể cập nhật wishlist");
+      toast.error(message || "Không thể cập nhật danh sách yêu thích");
     }
   }
 
@@ -141,7 +141,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     <div className="flex flex-col gap-5">
       {/* Brand + Name */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{product.productType}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          {resolveCategoryLabel(product.productType)}
+        </p>
         <h1 className="mt-1 text-2xl font-extrabold leading-snug text-gray-900">
           {product.name}
         </h1>
@@ -156,11 +158,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         <span>
           <span className="font-medium">Tình trạng:</span>{" "}
           <span className={inStock ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>
-            {inStock ? "Con hang" : "Het hang"}
+            {inStock ? "Còn hàng" : "Hết hàng"}
           </span>
         </span>
         <span>
-          <span className="font-medium">Danh muc:</span>{" "}
+          <span className="font-medium">Danh mục:</span>{" "}
           <span className="text-(--brand-navy)">{resolveCategoryLabel(product.productType)}</span>
         </span>
       </div>
@@ -192,15 +194,19 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           <span className="text-sm font-medium text-gray-700">Số lượng:</span>
           <div className="flex items-center overflow-hidden rounded-lg border border-gray-300">
             <button
+              type="button"
               onClick={() => setQty((q) => Math.max(1, q - 1))}
               className="flex h-9 w-9 items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="Giảm số lượng"
             >
               <Minus size={14} />
             </button>
             <span className="w-10 text-center text-sm font-semibold">{qty}</span>
             <button
+              type="button"
               onClick={() => setQty((q) => Math.min(availableStock, q + 1))}
               className="flex h-9 w-9 items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="Tăng số lượng"
             >
               <Plus size={14} />
             </button>
@@ -249,7 +255,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         }`}
       >
         <Heart size={16} className={wished ? "fill-current" : ""} />
-        {wished ? "Đã có trong wishlist" : "Thêm vào wishlist"}
+        {wished
+          ? "Đã có trong danh sách yêu thích"
+          : "Thêm vào danh sách yêu thích"}
       </button>
 
       {/* Commitments */}

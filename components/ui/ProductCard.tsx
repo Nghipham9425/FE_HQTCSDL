@@ -13,6 +13,10 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { notify } from "@/lib/notifications"
 import { type Product } from "@/lib/api/products"
+import {
+  DEFAULT_PRODUCT_IMAGE,
+  resolveProductImage,
+} from "@/lib/product-image"
 import { cn } from "@/lib/utils"
 import { useCartStore } from "@/lib/stores/cartStore"
 import { useWishlistStore } from "@/lib/stores/wishlistStore"
@@ -23,11 +27,15 @@ interface ProductCardProps {
 }
 
 const LOW_STOCK_THRESHOLD = 5
-const FALLBACK_IMAGE =
-  "https://picsum.photos/seed/cardgame-fallback/400/500"
-
 function formatPrice(price: number) {
   return `${price.toLocaleString("vi-VN")}₫`
+}
+
+function resolveProductTypeLabel(productType: string) {
+  if (productType === "TCG_CARD") return "Thẻ bài TCG"
+  if (productType === "ACCESSORY") return "Phụ kiện"
+  if (productType === "CONSOLE") return "Máy chơi game"
+  return "Sản phẩm"
 }
 
 export default function ProductCard({ product, className }: ProductCardProps) {
@@ -38,9 +46,8 @@ export default function ProductCard({ product, className }: ProductCardProps) {
     state.items.some((item) => String(item.id) === String(product.id)),
   )
   const [added, setAdded] = useState(false)
-  const [imgSrc, setImgSrc] = useState(
-    product.thumbnail ||
-      "https://picsum.photos/seed/cardgame-placeholder/400/500",
+  const [imgSrc, setImgSrc] = useState(() =>
+    resolveProductImage(product.thumbnail),
   )
 
   const availableStock = Math.max(0, Math.floor(product.stock || 0))
@@ -103,21 +110,15 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           className="block"
         >
           <div className="relative h-64 w-full overflow-hidden bg-linear-to-b from-slate-50 to-slate-100">
-            {product.sku ? (
-              <span className="absolute left-2 top-2 z-10 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-slate-700 shadow-sm backdrop-blur">
-                {product.sku}
-              </span>
-            ) : null}
-
             <Image
               src={imgSrc}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              onError={() => setImgSrc(FALLBACK_IMAGE)}
+              onError={() => setImgSrc(DEFAULT_PRODUCT_IMAGE)}
               className={cn(
-                "object-contain p-2 transition duration-300 group-hover:scale-105",
-                !inStock && "grayscale group-hover:scale-100",
+                "object-contain p-2",
+                !inStock && "grayscale",
               )}
             />
 
@@ -154,7 +155,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-          {product.productType}
+          {resolveProductTypeLabel(product.productType)}
         </p>
         <Link
           href={`/products/${product.id}`}

@@ -46,11 +46,12 @@ export default async function ProductDetailPage({
 
   const related = await fetchRelatedProducts(product, 6)
 
-  const categoryHref =
-    product.productType === "TCG_CARD" ? "pokemon-tcg" : "ps5"
-
-  const categoryLabel =
-    product.productType === "TCG_CARD" ? "Pokemon TCG" : "Console"
+  const category =
+    product.productType === "TCG_CARD"
+      ? { href: "pokemon-tcg", label: "Pokémon TCG" }
+      : product.productType === "ACCESSORY"
+        ? { href: "accessory", label: "Phụ kiện" }
+        : { href: "console", label: "Máy chơi game" }
 
   return (
     <div className="pb-16">
@@ -60,8 +61,8 @@ export default async function ProductDetailPage({
             items={[
               { label: "Sản phẩm", href: "/products" },
               {
-                label: categoryLabel,
-                href: `/products?category=${categoryHref}`,
+                label: category.label,
+                href: `/products?category=${category.href}`,
               },
               { label: product.name },
             ]}
