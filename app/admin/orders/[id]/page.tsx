@@ -1,13 +1,19 @@
-"use client";
+"use client"
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { getOrderById, updateOrderStatus } from "@/lib/api/admin";
-import type { AdminOrderDetail } from "@/lib/types/admin";
+import { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { useParams, useRouter } from "next/navigation"
+import { getOrderById, updateOrderStatus } from "@/lib/api/admin"
+import type { AdminOrderDetail } from "@/lib/types/admin"
 
-const statusOptions = ["PENDING", "CONFIRMED", "SHIPPED", "DONE", "CANCELLED"] as const;
-type OrderStatus = (typeof statusOptions)[number];
+const statusOptions = [
+  "PENDING",
+  "CONFIRMED",
+  "SHIPPED",
+  "DONE",
+  "CANCELLED",
+] as const
+type OrderStatus = (typeof statusOptions)[number]
 
 const statusTransitionMap: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["PENDING", "CONFIRMED", "CANCELLED"],
@@ -15,90 +21,104 @@ const statusTransitionMap: Record<OrderStatus, OrderStatus[]> = {
   SHIPPED: ["SHIPPED", "DONE"],
   DONE: ["DONE"],
   CANCELLED: ["CANCELLED"],
-};
+}
 
 function normalizeStatus(value: string): OrderStatus | null {
-  const upper = value.trim().toUpperCase();
-  return statusOptions.includes(upper as OrderStatus) ? (upper as OrderStatus) : null;
+  const upper = value.trim().toUpperCase()
+  return statusOptions.includes(upper as OrderStatus)
+    ? (upper as OrderStatus)
+    : null
 }
 
 function formatPrice(value: number) {
-  return value.toLocaleString("vi-VN") + "đ";
+  return value.toLocaleString("vi-VN") + "đ"
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("vi-VN");
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString("vi-VN")
 }
 
 export default function AdminOrderDetailPage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const id = useMemo(() => Number(params.id), [params]);
+  const router = useRouter()
+  const params = useParams<{ id: string }>()
+  const id = useMemo(() => Number(params.id), [params])
 
-  const [order, setOrder] = useState<AdminOrderDetail | null>(null);
-  const [status, setStatus] = useState<string>("PENDING");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [order, setOrder] = useState<AdminOrderDetail | null>(null)
+  const [status, setStatus] = useState<string>("PENDING")
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const currentStatus = useMemo(() => normalizeStatus(order?.orderStatus ?? ""), [order?.orderStatus]);
+  const currentStatus = useMemo(
+    () => normalizeStatus(order?.orderStatus ?? ""),
+    [order?.orderStatus],
+  )
 
-  const allowedStatuses = useMemo<OrderStatus[]>(() => {
-    if (!currentStatus) return statusOptions;
-    return statusTransitionMap[currentStatus];
-  }, [currentStatus]);
+  const allowedStatuses = useMemo<readonly OrderStatus[]>(() => {
+    if (!currentStatus) return statusOptions
+    return statusTransitionMap[currentStatus]
+  }, [currentStatus])
 
   useEffect(() => {
     if (!Number.isFinite(id) || id <= 0) {
-      setError("Invalid order id");
-      return;
+      setError("Invalid order id")
+      return
     }
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     getOrderById(id)
       .then((detail) => {
-        setOrder(detail);
-        setStatus(detail.orderStatus);
+        setOrder(detail)
+        setStatus(detail.orderStatus)
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Load failed"))
-      .finally(() => setLoading(false));
-  }, [id]);
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Load failed"),
+      )
+      .finally(() => setLoading(false))
+  }, [id])
 
   async function onSaveStatus() {
-    if (!order) return;
+    if (!order) return
 
-    const nextStatus = normalizeStatus(status);
+    const nextStatus = normalizeStatus(status)
     if (!nextStatus) {
-      setError("Trạng thái không hợp lệ");
-      return;
+      setError("Trạng thái không hợp lệ")
+      return
     }
 
-    if (currentStatus && !statusTransitionMap[currentStatus].includes(nextStatus)) {
-      setError(`Không thể chuyển từ ${currentStatus} sang ${nextStatus}`);
-      return;
+    if (
+      currentStatus &&
+      !statusTransitionMap[currentStatus].includes(nextStatus)
+    ) {
+      setError(`Không thể chuyển từ ${currentStatus} sang ${nextStatus}`)
+      return
     }
 
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
 
     try {
-      const updated = await updateOrderStatus(order.id, nextStatus);
-      setOrder(updated);
-      setStatus(updated.orderStatus);
-      router.refresh();
+      const updated = await updateOrderStatus(order.id, nextStatus)
+      setOrder(updated)
+      setStatus(updated.orderStatus)
+      router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Update status failed");
+      setError(err instanceof Error ? err.message : "Update status failed")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
   if (loading) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-5">Loading...</div>;
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        Loading...
+      </div>
+    )
   }
 
   if (!order) {
@@ -106,13 +126,15 @@ export default function AdminOrderDetailPage() {
       <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-700">
         {error ?? "Order not found"}
       </div>
-    );
+    )
   }
 
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-black text-slate-900">Order #{order.id}</h1>
+        <h1 className="text-2xl font-black text-slate-900">
+          Order #{order.id}
+        </h1>
         <Link
           href="/admin/orders"
           className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
@@ -125,23 +147,33 @@ export default function AdminOrderDetailPage() {
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-xs uppercase text-slate-500">Customer</p>
-            <p className="text-sm font-semibold text-slate-900">{order.customerName ?? "-"}</p>
+            <p className="text-sm font-semibold text-slate-900">
+              {order.customerName ?? "-"}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase text-slate-500">Email</p>
-            <p className="text-sm text-slate-900">{order.customerEmail ?? "-"}</p>
+            <p className="text-sm text-slate-900">
+              {order.customerEmail ?? "-"}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase text-slate-500">Phone</p>
-            <p className="text-sm text-slate-900">{order.customerPhone ?? "-"}</p>
+            <p className="text-sm text-slate-900">
+              {order.customerPhone ?? "-"}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase text-slate-500">Order date</p>
-            <p className="text-sm text-slate-900">{formatDate(order.orderDate)}</p>
+            <p className="text-sm text-slate-900">
+              {formatDate(order.orderDate)}
+            </p>
           </div>
           <div className="md:col-span-2">
             <p className="text-xs uppercase text-slate-500">Shipping address</p>
-            <p className="text-sm text-slate-900">{order.shippingAddress ?? "-"}</p>
+            <p className="text-sm text-slate-900">
+              {order.shippingAddress ?? "-"}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase text-slate-500">Order email</p>
@@ -149,7 +181,9 @@ export default function AdminOrderDetailPage() {
           </div>
           <div>
             <p className="text-xs uppercase text-slate-500">Payment</p>
-            <p className="text-sm text-slate-900">{order.paymentMethodName ?? "COD"}</p>
+            <p className="text-sm text-slate-900">
+              {order.paymentMethodName ?? "COD"}
+            </p>
           </div>
         </div>
 
@@ -190,9 +224,7 @@ export default function AdminOrderDetailPage() {
           </button>
         </div>
 
-        {error ? (
-          <p className="mt-3 text-sm text-rose-700">{error}</p>
-        ) : null}
+        {error ? <p className="mt-3 text-sm text-rose-700">{error}</p> : null}
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -204,14 +236,21 @@ export default function AdminOrderDetailPage() {
         </div>
 
         {order.items.map((item) => (
-          <div key={`${item.productId}-${item.sku ?? ""}`} className="grid grid-cols-1 gap-2 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid-cols-12 md:items-center">
+          <div
+            key={`${item.productId}-${item.sku ?? ""}`}
+            className="grid grid-cols-1 gap-2 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid-cols-12 md:items-center"
+          >
             <div className="md:col-span-5">
-              <p className="text-sm font-semibold text-slate-900">{item.productName}</p>
+              <p className="text-sm font-semibold text-slate-900">
+                {item.productName}
+              </p>
               <p className="text-xs text-slate-500">SKU: {item.sku ?? "-"}</p>
             </div>
             <div className="md:col-span-2 md:text-right">
               <p className="text-xs text-slate-500 md:hidden">Unit</p>
-              <p className="text-sm text-slate-700">{formatPrice(item.unitPrice)}</p>
+              <p className="text-sm text-slate-700">
+                {formatPrice(item.unitPrice)}
+              </p>
             </div>
             <div className="md:col-span-2 md:text-center">
               <p className="text-xs text-slate-500 md:hidden">Qty</p>
@@ -219,7 +258,9 @@ export default function AdminOrderDetailPage() {
             </div>
             <div className="md:col-span-3 md:text-right">
               <p className="text-xs text-slate-500 md:hidden">Line total</p>
-              <p className="text-sm font-semibold text-slate-900">{formatPrice(item.lineTotal)}</p>
+              <p className="text-sm font-semibold text-slate-900">
+                {formatPrice(item.lineTotal)}
+              </p>
             </div>
           </div>
         ))}
@@ -237,10 +278,12 @@ export default function AdminOrderDetailPage() {
           </div>
           <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold text-slate-900">
             <span>Final total</span>
-            <span className="text-(--brand-red)">{formatPrice(order.finalAmount)}</span>
+            <span className="text-(--brand-red)">
+              {formatPrice(order.finalAmount)}
+            </span>
           </div>
         </div>
       </div>
     </section>
-  );
+  )
 }
